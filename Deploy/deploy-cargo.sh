@@ -41,11 +41,12 @@ echo "platform: $platform"
 # detect ip address
 # ref:
 # http://stackoverflow.com/a/23934900/3167471
+# for aliyun, eth0 is LAN, and eth1 is WAN
 
 ip='unknown'
 
 if [[ "$platform" == 'linux' ]]; then
-   ip=`ip addr show eth0 | awk '$1 == "inet" {gsub(/\/.*$/, "", $2); print $2}'`
+   ip=`ip addr show eth1 | awk '$1 == "inet" {gsub(/\/.*$/, "", $2); print $2}'`
 elif [[ "$platform" == 'mac' ]]; then
    ip=`ifconfig en0 | awk '$1 == "inet" {print $2}'`
 fi

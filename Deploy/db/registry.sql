@@ -89,6 +89,22 @@ create table project_member (
 insert into project_member (project_id, user_id, role, creation_time, update_time) values
 (1, 1, 1, NOW(), NOW());
 
+create table label (
+ label_id int NOT NULL AUTO_INCREMENT,
+ owner_id int NOT NULL,
+ project_id int NOT NULL,
+ project_name varchar (50) NOT NULL,
+ name varchar (50) NOT NULL,
+ remark varchar (100) NOT NULL,
+ creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
+ update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ deleted tinyint (1) DEFAULT 0 NOT NULL,
+ PRIMARY KEY (label_id),
+ FOREIGN KEY (owner_id) REFERENCES user(user_id),
+ FOREIGN KEY (project_id) REFERENCES project(project_id),
+ UNIQUE (label_id)
+);
+
 create table access_log (
  log_id int NOT NULL AUTO_INCREMENT,
  user_id int NOT NULL,

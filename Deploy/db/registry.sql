@@ -53,8 +53,8 @@ create table user (
  reset_uuid varchar(40) DEFAULT NULL,
  salt varchar(40) DEFAULT NULL,
  sysadmin_flag tinyint (1),
- creation_time timestamp,
- update_time timestamp,
+ creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
+ update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  primary key (user_id),
  UNIQUE (username),
  UNIQUE (email)
@@ -70,8 +70,8 @@ create table project (
  # The max length of name controlled by API is 30, 
  # and 11 is reserved for marking the deleted project.
  name varchar (41) NOT NULL,
- creation_time timestamp,
- update_time timestamp,
+ creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
+ update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  deleted tinyint (1) DEFAULT 0 NOT NULL,
  public tinyint (1) DEFAULT 0 NOT NULL,
  primary key (project_id),
@@ -86,8 +86,8 @@ create table project_member (
  project_id int NOT NULL,
  user_id int NOT NULL,
  role int NOT NULL,
- creation_time timestamp,
- update_time timestamp,
+ creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
+ update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  PRIMARY KEY (project_id, user_id),
  FOREIGN KEY (role) REFERENCES role(role_id),
  FOREIGN KEY (project_id) REFERENCES project(project_id),
@@ -105,7 +105,7 @@ create table access_log (
  repo_tag varchar (128),
  GUID varchar(64), 
  operation varchar(20) NOT NULL,
- op_time timestamp,
+ op_time timestamp DEFAULT CURRENT_TIMESTAMP,
  primary key (log_id),
  INDEX pid_optime (project_id, op_time),
  FOREIGN KEY (user_id) REFERENCES user(user_id),
@@ -136,8 +136,8 @@ create table replication_policy (
  deleted tinyint (1) DEFAULT 0 NOT NULL,
  cron_str varchar(256),
  start_time timestamp NULL,
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+ creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
+ update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  PRIMARY KEY (id)
  );
 
@@ -153,8 +153,8 @@ create table replication_target (
  1 means it's a regulart registry
  */
  target_type tinyint(1) NOT NULL DEFAULT 0,
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+ creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
+ update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  PRIMARY KEY (id)
  );
 
@@ -165,8 +165,8 @@ create table replication_job (
  repository varchar(256) NOT NULL,
  operation  varchar(64) NOT NULL,
  tags   varchar(16384),
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+ creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
+ update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  PRIMARY KEY (id),
  INDEX policy (policy_id),
  INDEX poid_uptime (policy_id, update_time)

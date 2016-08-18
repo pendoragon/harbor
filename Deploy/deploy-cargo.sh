@@ -69,9 +69,11 @@ echo "prepare config..."
 
 echo "nginx listen on 8002..."
 sed 's/listen.*;$/listen 8002;/g' -i ./config/nginx/nginx.conf
+sed 's/- 80:80/- 8002:8002/g' -i ./docker-compose.yml
+
 
 echo "build gobase for harbor/ui and harbor/job..."
 docker build -f ../Dockerfile.gobase -t gobase:latest ../
 
 echo "docker-compose up cargo..."
-docker-compose -f docker-compose-cargo.yml up -d
+docker-compose up -d

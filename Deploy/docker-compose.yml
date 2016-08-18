@@ -29,6 +29,9 @@ services:
     restart: always
     volumes:
       - /data/database:/var/lib/mysql
+    # for debug
+    # ports:
+    #   - 3306:3306
     env_file:
       - ./config/db/env
     depends_on:

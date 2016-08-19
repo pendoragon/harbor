@@ -48,6 +48,9 @@ ip='unknown'
 if [[ "$platform" == 'linux' ]]; then
    ip=`ip addr show eth1 | awk '$1 == "inet" {gsub(/\/.*$/, "", $2); print $2}'`
 elif [[ "$platform" == 'mac' ]]; then
+    # install gnu-sed on mac
+    # ref: https://github.com/vmware/harbor/issues/645
+    # brew install gnu-sed --with-default-names
    ip=`ifconfig en0 | awk '$1 == "inet" {print $2}'`
 fi
 

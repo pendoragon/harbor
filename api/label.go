@@ -155,6 +155,42 @@ func (l *LabelAPI) Delete() {
 	}
 }
 
+// List ...
+func (l *LabelAPI) List() {
+	log.Infof("/api/labels/list")
+	idStr := l.Ctx.Input.Param(":id")
+
+	if !(len(idStr) > 0) {
+		l.CustomAbort(http.StatusBadRequest, "invalid project id")
+	}
+
+	var err error
+	l.projectID, err = strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		log.Errorf("Error parsing project id: %s, error: %v", idStr, err)
+		l.CustomAbort(http.StatusBadRequest, "invalid project id")
+	}
+
+	exist, err := dao.ProjectExists(l.projectID)
+	if err != nil {
+		log.Errorf("Error occurred in ProjectExists, error: %v", err)
+		l.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	}
+
+	if !exist {
+		l.CustomAbort(http.StatusNotFound, fmt.Sprintf("project does not exist, id: %v", l.projectID))
+	}
+
+	labels, err := dao.GetLabelsByProjectID(l.projectID)
+	if err != nil {
+		log.Errorf("failed to get labels from project %d: %v", l.projectID, err)
+		l.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	l.Data["json"] = labels
+	l.ServeJSON()
+}
+
 func validateLabelReq(req labelReq) error {
 	log.Debugf("validateLabelReq, LabelName: %s, LabelRemark: %s", req.LabelName, req.LabelRemark)
 

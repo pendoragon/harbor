@@ -32,7 +32,7 @@ type LabelHookAPI struct {
 	BaseAPI
 	userID      int
 	labelHookID int64
-	projectID   int64
+	labelID     int64
 }
 
 type labelHookReq struct {
@@ -118,4 +118,40 @@ func (lh *LabelHookAPI) Delete() {
 		log.Errorf("Failed to delete labelhook, error: %v", err)
 		lh.RenderError(http.StatusInternalServerError, "Failed to delete labelhook")
 	}
+}
+
+// List ...
+func (lh *LabelHookAPI) List() {
+	log.Infof("/api/labelhooks/list")
+	idStr := lh.Ctx.Input.Param(":id")
+
+	if !(len(idStr) > 0) {
+		lh.CustomAbort(http.StatusBadRequest, "invalid label id")
+	}
+
+	var err error
+	lh.labelID, err = strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		log.Errorf("Error parsing label id: %s, error: %v", idStr, err)
+		lh.CustomAbort(http.StatusBadRequest, "invalid label id")
+	}
+
+	exist, err := dao.LabelExists(lh.labelID)
+	if err != nil {
+		log.Errorf("Error occurred in LabelExists, error: %v", err)
+		lh.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	}
+
+	if !exist {
+		lh.CustomAbort(http.StatusNotFound, fmt.Sprintf("label does not exist, id: %v", lh.labelID))
+	}
+
+	labelhooks, err := dao.GetLabelHooksByLabelID(lh.labelID)
+	if err != nil {
+		log.Errorf("failed to get labelhooks from label %d: %v", lh.labelID, err)
+		lh.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	lh.Data["json"] = labelhooks
+	lh.ServeJSON()
 }

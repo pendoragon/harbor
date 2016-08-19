@@ -93,7 +93,6 @@ create table label (
  label_id int NOT NULL AUTO_INCREMENT,
  owner_id int NOT NULL,
  project_id int NOT NULL,
- project_name varchar (50) NOT NULL,
  name varchar (50) NOT NULL,
  remark varchar (100) NOT NULL,
  creation_time timestamp DEFAULT CURRENT_TIMESTAMP,

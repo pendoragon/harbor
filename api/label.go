@@ -37,7 +37,6 @@ type LabelAPI struct {
 
 type labelReq struct {
 	ProjectID   int64  `json:"project_id"`
-	ProjectName string `json:"project_name"`
 	LabelName   string `json:"label_name"`
 	LabelRemark string `json:"label_remark"`
 }
@@ -107,24 +106,11 @@ func (l *LabelAPI) Post() {
 		return
 	}
 
-	// check whether project_name is exists
-	projectName := req.ProjectName
-	project_name_exist, err := dao.ProjectExists(projectName)
-	if err != nil {
-		log.Errorf("Error happened checking project existence in db, error: %v, project name: %s", err, projectName)
-		return
-	}
-	if !project_name_exist {
-		l.RenderError(http.StatusNotFound, "Error, project_name does not exist")
-		return
-	}
-
 	label := models.Label{
-		OwnerID:     l.userID,
-		ProjectID:   req.ProjectID,
-		ProjectName: req.ProjectName,
-		Name:        req.LabelName,
-		Remark:      req.LabelRemark}
+		OwnerID:   l.userID,
+		ProjectID: req.ProjectID,
+		Name:      req.LabelName,
+		Remark:    req.LabelRemark}
 
 	labelID, err := dao.NewLabel(label)
 	if err != nil {

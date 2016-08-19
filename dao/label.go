@@ -26,13 +26,13 @@ import (
 func NewLabel(label models.Label) (int64, error) {
 	log.Debugf("NewLabel: %v", label)
 	o := GetOrmer()
-	p, err := o.Raw("insert into label (owner_id, project_id, project_name, name, remark, creation_time, update_time, deleted) values (?, ?, ?, ?, ?, ?, ?, ?)").Prepare()
+	p, err := o.Raw("insert into label (owner_id, project_id, name, remark, creation_time, update_time, deleted) values (?, ?, ?, ?, ?, ?, ?)").Prepare()
 	if err != nil {
 		return 0, err
 	}
 
 	now := time.Now()
-	r, err := p.Exec(label.OwnerID, label.ProjectID, label.ProjectName, label.Name, label.Remark, now, now, 0)
+	r, err := p.Exec(label.OwnerID, label.ProjectID, label.Name, label.Remark, now, now, 0)
 	if err != nil {
 		return 0, err
 	}
@@ -149,8 +149,8 @@ func LabelHookExists(nameOrID interface{}) (bool, error) {
 func GetLabelsByProjectID(project_id int64) ([]models.Label, error) {
 	o := GetOrmer()
 
-	sql := `select l.label_id, l.name, l.remark, u.username as owner_name, l.owner_id,
-			l.creation_time, l.update_time
+	sql := `select l.label_id, l.project_id, l.name, l.remark,
+			l.owner_id, l.creation_time, l.update_time
 			from label l left join user u on l.owner_id = u.user_id
 			where l.deleted = 0 and l.project_id = ?`
 	queryParam := make([]interface{}, 1)

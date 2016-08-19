@@ -45,7 +45,7 @@ func NewLabel(label models.Label) (int64, error) {
 	return labelID, err
 }
 
-// NewLabelHook adds a labelhook to the database.
+// NewLabelHook insert a labelhook to the database.
 func NewLabelHook(labelhook models.LabelHook) (int64, error) {
 	log.Debugf("NewLabelHook: %v", labelhook)
 	o := GetOrmer()
@@ -68,7 +68,7 @@ func NewLabelHook(labelhook models.LabelHook) (int64, error) {
 	return labelHookID, err
 }
 
-// Delete delete a label to the database.
+// Delete remove a label from the database.
 func DeleteLabel(labelID int64) error {
 	log.Debugf("DeleteLabel labelID: %v", labelID)
 	o := GetOrmer()
@@ -83,7 +83,7 @@ func DeleteLabel(labelID int64) error {
 	return nil
 }
 
-// Delete delete a labelhook to the database.
+// Delete remove a labelhook from the database.
 func DeleteLabelHook(labelHookID int64) error {
 	log.Debugf("DeleteLabelHook labelHookID: %v", labelHookID)
 	o := GetOrmer()

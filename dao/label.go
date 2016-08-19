@@ -144,3 +144,53 @@ func LabelHookExists(nameOrID interface{}) (bool, error) {
 	}
 	return num > 0, nil
 }
+
+// GetLabelsByProjectID ...
+func GetLabelsByProjectID(project_id int64) ([]models.Label, error) {
+	o := GetOrmer()
+
+	sql := `select l.label_id, l.name, l.remark, u.username as owner_name, l.owner_id,
+			l.creation_time, l.update_time
+			from label l left join user u on l.owner_id = u.user_id
+			where l.deleted = 0 and l.project_id = ?`
+	queryParam := make([]interface{}, 1)
+	queryParam = append(queryParam, project_id)
+
+	var labels []models.Label
+	count, err := o.Raw(sql, queryParam).QueryRows(&labels)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if count == 0 {
+		return nil, nil
+	}
+
+	return labels, nil
+}
+
+// GetLabelHooksByLabelID ...
+func GetLabelHooksByLabelID(label_id int64) ([]models.LabelHook, error) {
+	o := GetOrmer()
+
+	sql := `select lh.labelhook_id, lh.label_id, lh.repo_name, lh.tag,
+			lh.creation_time,lh.update_time
+			from labelhook lh
+			where lh.deleted = 0 and lh.label_id = ?`
+	queryParam := make([]interface{}, 1)
+	queryParam = append(queryParam, label_id)
+
+	var labelhooks []models.LabelHook
+	count, err := o.Raw(sql, queryParam).QueryRows(&labelhooks)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if count == 0 {
+		return nil, nil
+	}
+
+	return labelhooks, nil
+}

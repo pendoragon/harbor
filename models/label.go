@@ -24,7 +24,6 @@ type Label struct {
 	LabelID         int64     `orm:"pk;column(label_id)" json:"label_id"`
 	OwnerID         int       `orm:"column(owner_id)" json:"owner_id"`
 	ProjectID       int64     `orm:"column(project_id)" json:"project_id"`
-	ProjectName     string    `orm:"column(project_name)" json:"project_name"`
 	Name            string    `orm:"column(name)" json:"name"`
 	Remark          string    `orm:"column(remark)" json:"remark"`
 	CreationTime    time.Time `orm:"column(creation_time)" json:"creation_time"`

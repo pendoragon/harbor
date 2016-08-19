@@ -121,7 +121,7 @@ func (lh *LabelHookAPI) Delete() {
 // List ...
 func (lh *LabelHookAPI) List() {
 	log.Infof("/api/labelhooks/list")
-	idStr := lh.Ctx.Input.Param(":id")
+	idStr := lh.Ctx.Input.Param(":lid")
 
 	if !(len(idStr) > 0) {
 		lh.CustomAbort(http.StatusBadRequest, "invalid label id")

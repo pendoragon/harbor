@@ -65,9 +65,9 @@ func initRouters() {
 	beego.Router("/api/projects/:id([0-9]+)/logs/filter", &api.ProjectAPI{}, "post:FilterAccessLog")
 
 	beego.Router("/api/labels/?:id", &api.LabelAPI{})
-	beego.Router("/api/labels/list/?:id", &api.LabelAPI{}, "get:List")
+	beego.Router("/api/labels/list/?:pid", &api.LabelAPI{}, "get:List")
 	beego.Router("/api/labelhooks/?:id", &api.LabelHookAPI{})
-	beego.Router("/api/labelhooks/list/?:id", &api.LabelHookAPI{}, "get:List")
+	beego.Router("/api/labelhooks/list/?:lid", &api.LabelHookAPI{}, "get:List")
 	beego.Router("/api/users/?:id", &api.UserAPI{})
 	beego.Router("/api/users/:id([0-9]+)/password", &api.UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/internal/syncregistry", &api.InternalAPI{}, "post:SyncRegistry")

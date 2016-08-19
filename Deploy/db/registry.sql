@@ -105,6 +105,21 @@ create table label (
  UNIQUE (label_id)
 );
 
+create table labelhook (
+ labelhook_id int NOT NULL AUTO_INCREMENT,
+ label_id int NOT NULL,
+ repo_name varchar (50) NOT NULL,
+ tag varchar (50) NOT NULL,
+ creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
+ update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ deleted tinyint (1) DEFAULT 0 NOT NULL,
+ PRIMARY KEY (labelhook_id),
+ FOREIGN KEY (label_id) REFERENCES label(label_id),
+ UNIQUE (labelhook_id)
+);
+
+ALTER TABLE labelhook ADD UNIQUE (label_id, repo_name, tag);
+
 create table access_log (
  log_id int NOT NULL AUTO_INCREMENT,
  user_id int NOT NULL,

@@ -49,13 +49,13 @@ func NewLabel(label models.Label) (int64, error) {
 func NewLabelHook(labelhook models.LabelHook) (int64, error) {
 	log.Debugf("NewLabelHook: %v", labelhook)
 	o := GetOrmer()
-	p, err := o.Raw("insert into labelhook (label_id, repo_name, tag, creation_time, update_time, deleted) values (?, ?, ?, ?, ?, ?)").Prepare()
+	p, err := o.Raw("insert into labelhook (label_id, repo_name, creation_time, update_time, deleted) values (?, ?, ?, ?, ?)").Prepare()
 	if err != nil {
 		return 0, err
 	}
 
 	now := time.Now()
-	r, err := p.Exec(labelhook.LabelID, labelhook.RepoName, labelhook.Tag, now, now, 0)
+	r, err := p.Exec(labelhook.LabelID, labelhook.RepoName, now, now, 0)
 	if err != nil {
 		return 0, err
 	}
@@ -174,7 +174,7 @@ func GetLabelsByProjectID(project_id int64) ([]models.Label, error) {
 func GetLabelHooksByLabelID(label_id int64) ([]models.LabelHook, error) {
 	o := GetOrmer()
 
-	sql := `select lh.labelhook_id, lh.label_id, lh.repo_name, lh.tag,
+	sql := `select lh.labelhook_id, lh.label_id, lh.repo_name,
 			lh.creation_time,lh.update_time
 			from labelhook lh
 			where lh.deleted = 0 and lh.label_id = ?`

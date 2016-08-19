@@ -38,7 +38,6 @@ type LabelHookAPI struct {
 type labelHookReq struct {
 	LabelID  int64  `json:"label_id"`
 	RepoName string `json:"repo_name"`
-	Tag      string `json:"tag"`
 }
 
 const dupLabelHookPattern = `Duplicate entry '\w+' for key 'name'`
@@ -88,8 +87,7 @@ func (lh *LabelHookAPI) Post() {
 
 	labelHook := models.LabelHook{
 		LabelID:  req.LabelID,
-		RepoName: req.RepoName,
-		Tag:      req.Tag}
+		RepoName: req.RepoName}
 
 	labelHookID, err := dao.NewLabelHook(labelHook)
 	if err != nil {

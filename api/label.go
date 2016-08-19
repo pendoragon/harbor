@@ -144,7 +144,7 @@ func (l *LabelAPI) Delete() {
 // List ...
 func (l *LabelAPI) List() {
 	log.Infof("/api/labels/list")
-	idStr := l.Ctx.Input.Param(":id")
+	idStr := l.Ctx.Input.Param(":pid")
 
 	if !(len(idStr) > 0) {
 		l.CustomAbort(http.StatusBadRequest, "invalid project id")

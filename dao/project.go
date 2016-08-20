@@ -56,6 +56,21 @@ func AddProject(project models.Project) (int64, error) {
 	return projectID, err
 }
 
+// Delete set a project's deleted to 1 in the database.
+func DeleteProject(projectID int64) error {
+	log.Debugf("DeleteProject projectID: %v", projectID)
+	o := GetOrmer()
+
+	sql := "update project set deleted = ? where project_id = ?"
+
+	if _, err := o.Raw(sql, 1, projectID).Exec(); err != nil {
+		log.Errorf("Failed to delete project, error: %v", err)
+		return err
+	}
+
+	return nil
+}
+
 // IsProjectPublic ...
 func IsProjectPublic(projectName string) bool {
 	project, err := GetProjectByName(projectName)

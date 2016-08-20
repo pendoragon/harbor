@@ -110,7 +110,8 @@ func (l *LabelAPI) Post() {
 		OwnerID:   l.userID,
 		ProjectID: req.ProjectID,
 		Name:      req.LabelName,
-		Remark:    req.LabelRemark}
+		Remark:    req.LabelRemark,
+	}
 
 	labelID, err := dao.NewLabel(label)
 	if err != nil {

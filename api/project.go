@@ -38,7 +38,9 @@ type ProjectAPI struct {
 
 type projectReq struct {
 	ProjectName string `json:"project_name"`
-	Public      int    `json:"public"`
+	Manager     string `json:"manager"`
+	Remark      string `json:"remark"`
+	Public      int   `json:"public"`
 }
 
 const projectNameMaxLen int = 30
@@ -90,7 +92,14 @@ func (p *ProjectAPI) Post() {
 		p.RenderError(http.StatusConflict, "")
 		return
 	}
-	project := models.Project{OwnerID: p.userID, Name: projectName, CreationTime: time.Now(), Public: public}
+	project := models.Project{
+		OwnerID:      p.userID,
+		Name:         projectName,
+		Manager:      req.Manager,
+		Remark:       req.Remark,
+		CreationTime: time.Now(),
+		Public:       public,
+	}
 	projectID, err := dao.AddProject(project)
 	if err != nil {
 		log.Errorf("Failed to add project, error: %v", err)
@@ -102,7 +111,10 @@ func (p *ProjectAPI) Post() {
 		}
 		return
 	}
-	p.Redirect(http.StatusCreated, strconv.FormatInt(projectID, 10))
+
+	// return project id
+	p.RenderError(http.StatusOK, strconv.FormatInt(projectID, 10))
+	// p.Redirect(http.StatusCreated, strconv.FormatInt(projectID, 10))
 }
 
 // Head ...

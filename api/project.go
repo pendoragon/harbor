@@ -117,6 +117,19 @@ func (p *ProjectAPI) Post() {
 	// p.Redirect(http.StatusCreated, strconv.FormatInt(projectID, 10))
 }
 
+// Delete  ...
+func (p *ProjectAPI) Delete() {
+	idStr := p.Ctx.Input.Param(":id")
+	id, _ := strconv.Atoi(idStr)
+
+	log.Debugf("DELETE /api/projects, id: %v", id)
+
+	if err := dao.DeleteProject(int64(id)); err != nil {
+		log.Errorf("Failed to delete label, error: %v", err)
+		p.RenderError(http.StatusInternalServerError, "Failed to delete label")
+	}
+}
+
 // Head ...
 func (p *ProjectAPI) Head() {
 	projectName := p.GetString("project_name")

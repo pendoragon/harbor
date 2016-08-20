@@ -62,6 +62,8 @@ create table project (
  project_id int NOT NULL AUTO_INCREMENT,
  owner_id int NOT NULL,
  name varchar (30) NOT NULL,
+ manager varchar (50) NOT NULL,
+ remark varchar (500) NOT NULL,
  creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
  update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  deleted tinyint (1) DEFAULT 0 NOT NULL,

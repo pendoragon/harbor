@@ -146,7 +146,7 @@ func LabelHookExists(nameOrID interface{}) (bool, error) {
 }
 
 // GetLabelsByProjectID ...
-func GetLabelsByProjectID(project_id int64) ([]models.Label, error) {
+func GetLabelsByProjectID(project_id int64, labelName string) ([]models.Label, error) {
 	o := GetOrmer()
 
 	sql := `select l.label_id, l.project_id, l.name, l.remark,
@@ -155,6 +155,12 @@ func GetLabelsByProjectID(project_id int64) ([]models.Label, error) {
 			where l.deleted = 0 and l.project_id = ?`
 	queryParam := make([]interface{}, 1)
 	queryParam = append(queryParam, project_id)
+
+	if len(labelName) > 0 {
+		labelName = "%" + labelName + "%"
+		sql += " and name like ? "
+		queryParam = append(queryParam, labelName)
+	}
 
 	var labels []models.Label
 	count, err := o.Raw(sql, queryParam).QueryRows(&labels)

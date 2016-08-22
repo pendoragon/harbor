@@ -157,7 +157,8 @@ func (l *LabelAPI) List() {
 		l.CustomAbort(http.StatusNotFound, fmt.Sprintf("project does not exist, id: %v", l.projectID))
 	}
 
-	labels, err := dao.GetLabelsByProjectID(l.projectID)
+	labelName := l.GetString("label_name")
+	labels, err := dao.GetLabelsByProjectID(l.projectID, labelName)
 	if err != nil {
 		log.Errorf("failed to get labels from project %d: %v", l.projectID, err)
 		l.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))

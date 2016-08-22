@@ -70,8 +70,8 @@ create table project (
  # The max length of name controlled by API is 30, 
  # and 11 is reserved for marking the deleted project.
  name varchar (41) NOT NULL,
- manager varchar (50) NOT NULL,
- remark varchar (500) NOT NULL,
+ manager varchar (50),
+ remark varchar (500),
  creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
  update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  deleted tinyint (1) DEFAULT 0 NOT NULL,
@@ -110,9 +110,11 @@ create table label (
  deleted tinyint (1) DEFAULT 0 NOT NULL,
  PRIMARY KEY (label_id),
  FOREIGN KEY (owner_id) REFERENCES user(user_id),
- FOREIGN KEY (project_id) REFERENCES project(project_id),
+ FOREIGN KEY (project_id) REFERENCES project(project_id) ON DELETE CASCADE,
  UNIQUE (label_id)
 );
+
+ALTER TABLE label ADD UNIQUE (project_id, name);
 
 create table labelhook (
  labelhook_id int NOT NULL AUTO_INCREMENT,
@@ -122,7 +124,7 @@ create table labelhook (
  update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  deleted tinyint (1) DEFAULT 0 NOT NULL,
  PRIMARY KEY (labelhook_id),
- FOREIGN KEY (label_id) REFERENCES label(label_id),
+ FOREIGN KEY (label_id) REFERENCES label(label_id) ON DELETE CASCADE,
  UNIQUE (labelhook_id)
 );
 

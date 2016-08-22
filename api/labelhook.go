@@ -40,7 +40,7 @@ type labelHookReq struct {
 	RepoName string `json:"repo_name"`
 }
 
-const dupLabelHookPattern = `Duplicate entry '\w+' for key 'name'`
+const dupLabelHookPattern = `Duplicate entry .* for key 'label_id'`
 
 // Prepare validates the URL and the user
 func (lh *LabelHookAPI) Prepare() {
@@ -95,7 +95,7 @@ func (lh *LabelHookAPI) Post() {
 		log.Errorf("Failed to new labelHook, error: %v", err)
 		dup, _ := regexp.MatchString(dupLabelHookPattern, err.Error())
 		if dup {
-			lh.RenderError(http.StatusConflict, "name conflict")
+			lh.RenderError(http.StatusConflict, "label_id + repo_name conflict")
 		} else {
 			lh.RenderError(http.StatusInternalServerError, "Failed to new labelHook")
 		}

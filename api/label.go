@@ -45,7 +45,7 @@ const labelNameMaxLen int = 50
 const labelNameMinLen int = 2
 const labelRemarkMaxLen int = 100
 const labelRemarkMinLen int = 2
-const dupLabelPattern = `Duplicate entry '\w+' for key 'name'`
+const dupLabelPattern = `Duplicate entry .* for key 'project_id'`
 
 // Prepare validates the URL and the user
 func (l *LabelAPI) Prepare() {
@@ -107,7 +107,7 @@ func (l *LabelAPI) Post() {
 		log.Errorf("Failed to new label, error: %v", err)
 		dup, _ := regexp.MatchString(dupLabelPattern, err.Error())
 		if dup {
-			l.RenderError(http.StatusConflict, "")
+			l.RenderError(http.StatusConflict, "project_id and name conflict")
 		} else {
 			l.RenderError(http.StatusInternalServerError, "Failed to new label")
 		}

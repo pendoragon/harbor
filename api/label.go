@@ -83,17 +83,6 @@ func (l *LabelAPI) Post() {
 		return
 	}
 
-	labelName := req.LabelName
-	label_exist, err := dao.LabelExists(labelName)
-	if err != nil {
-		log.Errorf("Error happened checking label existence in db, error: %v, label name: %s", err, labelName)
-		return
-	}
-	if label_exist {
-		l.RenderError(http.StatusConflict, "label exist")
-		return
-	}
-
 	// check whether project_id is exists
 	projectID := req.ProjectID
 	project_id_exist, err := dao.ProjectExists(projectID)

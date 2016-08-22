@@ -68,6 +68,14 @@ func DeleteProject(projectID int64) error {
 		return err
 	}
 
+	// remove labels of this project at the same time
+	sql2 := "delete from label where project_id = ?"
+
+	if _, err := o.Raw(sql2, projectID).Exec(); err != nil {
+		log.Errorf("Failed to delete labels while delete project, error: %v", err)
+		return err
+	}
+
 	return nil
 }
 

@@ -152,9 +152,13 @@ func GetLabelsByProjectID(project_id int64, labelName string) ([]models.Label, e
 	sql := `select l.label_id, l.project_id, l.name, l.remark,
 			l.owner_id, l.creation_time, l.update_time
 			from label l left join user u on l.owner_id = u.user_id
-			where l.deleted = 0 and l.project_id = ?`
+			where l.deleted = 0`
 	queryParam := make([]interface{}, 1)
-	queryParam = append(queryParam, project_id)
+
+	if project_id > 0 {
+		sql += " and l.project_id = ?"
+		queryParam = append(queryParam, project_id)
+	}
 
 	if len(labelName) > 0 {
 		labelName = "%" + labelName + "%"

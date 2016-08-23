@@ -71,7 +71,7 @@ create table project (
  # and 11 is reserved for marking the deleted project.
  name varchar (41) NOT NULL,
  manager varchar (50),
- remark varchar (500) NOT NULL,
+ remark varchar (500) NOT NULL DEFAULT 'remark',
  creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
  update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  deleted tinyint (1) DEFAULT 0 NOT NULL,

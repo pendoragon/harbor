@@ -135,26 +135,25 @@ func (l *LabelAPI) Delete() {
 func (l *LabelAPI) List() {
 	log.Infof("/api/labels/list")
 	idStr := l.Ctx.Input.Param(":pid")
-
-	if !(len(idStr) > 0) {
-		l.CustomAbort(http.StatusBadRequest, "invalid project id")
-	}
-
 	var err error
-	l.projectID, err = strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		log.Errorf("Error parsing project id: %s, error: %v", idStr, err)
-		l.CustomAbort(http.StatusBadRequest, "invalid project id")
-	}
+	l.projectID = 0
 
-	exist, err := dao.ProjectExists(l.projectID)
-	if err != nil {
-		log.Errorf("Error occurred in ProjectExists, error: %v", err)
-		l.CustomAbort(http.StatusInternalServerError, "Internal error.")
-	}
+	if len(idStr) > 0 {
+		l.projectID, err = strconv.ParseInt(idStr, 10, 64)
+		if err != nil {
+			log.Errorf("Error parsing project id: %s, error: %v", idStr, err)
+			l.CustomAbort(http.StatusBadRequest, "invalid project id")
+		}
 
-	if !exist {
-		l.CustomAbort(http.StatusNotFound, fmt.Sprintf("project does not exist, id: %v", l.projectID))
+		exist, err := dao.ProjectExists(l.projectID)
+		if err != nil {
+			log.Errorf("Error occurred in ProjectExists, error: %v", err)
+			l.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		}
+
+		if !exist {
+			l.CustomAbort(http.StatusNotFound, fmt.Sprintf("project does not exist, id: %v", l.projectID))
+		}
 	}
 
 	labelName := l.GetString("label_name")

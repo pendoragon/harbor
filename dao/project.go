@@ -252,20 +252,20 @@ func GetAllProjects(projectName string) ([]models.Project, error) {
 
 func getProjects(public int, projectName string) ([]models.Project, error) {
 	o := GetOrmer()
-	sql := `select project_id, owner_id, manager, remark,
-		creation_time, update_time, name, public
-		from project
-		where deleted = 0`
+	sql := `select p.project_id, p.owner_id, p.manager, p.remark, u.username as owner_name,
+		p.creation_time, p.update_time, p.name, p.public
+		from project p left join user u on p.owner_id = u.user_id
+		where p.deleted = 0`
 	queryParam := make([]interface{}, 1)
 	if public == 1 {
-		sql += " and public = ? "
+		sql += " and p.public = ? "
 		queryParam = append(queryParam, public)
 	}
 	if len(projectName) > 0 {
-		sql += " and name like ? "
+		sql += " and p.name like ? "
 		queryParam = append(queryParam, projectName)
 	}
-	sql += " order by name "
+	sql += " order by p.name "
 	var projects []models.Project
 	if _, err := o.Raw(sql, queryParam).QueryRows(&projects); err != nil {
 		return nil, err

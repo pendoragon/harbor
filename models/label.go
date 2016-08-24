@@ -36,6 +36,7 @@ type Label struct {
 type LabelHook struct {
 	LabelHookID     int64     `orm:"pk;column(labelhook_id)" json:"labelhook_id"`
 	LabelID         int64     `orm:"column(label_id)" json:"label_id"`
+	LabelName       string    `orm:"column(label_name)" json:"label_name"`
 	RepoName        string    `orm:"column(repo_name)" json:"repo_name"`
 	CreationTime    time.Time `orm:"column(creation_time)" json:"creation_time"`
 	CreationTimeStr string    `json:"creation_time_str"`

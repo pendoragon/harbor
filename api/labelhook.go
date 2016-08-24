@@ -154,3 +154,23 @@ func (lh *LabelHookAPI) List() {
 	lh.Data["json"] = labelhooks
 	lh.ServeJSON()
 }
+
+// ListLabelHooksByRepoName ...
+func (lh *LabelHookAPI) ListLabelHooksByRepoName() {
+	var req labelHookReq
+	lh.DecodeJSONReq(&req)
+	log.Debugf("POST /api/labelhooks/list_labelnames_by_reponame, req: %v", req)
+
+	if !(len(req.RepoName) > 0) {
+		lh.CustomAbort(http.StatusBadRequest, "invalid repo_name")
+	}
+
+	labelhooks, err := dao.GetLabelHooksByRepoName(req.RepoName)
+	if err != nil {
+		log.Errorf("failed to get labelnames from repo_name %d: %v", req.RepoName, err)
+		lh.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	lh.Data["json"] = labelhooks
+	lh.ServeJSON()
+}

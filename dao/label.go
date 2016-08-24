@@ -184,12 +184,36 @@ func GetLabelsByProjectID(project_id int64, labelName string) ([]models.Label, e
 func GetLabelHooksByLabelID(label_id int64) ([]models.LabelHook, error) {
 	o := GetOrmer()
 
-	sql := `select lh.labelhook_id, lh.label_id, lh.repo_name,
+	sql := `select lh.labelhook_id, lh.label_id, lh.repo_name, l.name as label_name,
 			lh.creation_time,lh.update_time
-			from labelhook lh
+			from labelhook lh left join label l on lh.label_id = l.label_id
 			where lh.deleted = 0 and lh.label_id = ?`
 	queryParam := make([]interface{}, 1)
 	queryParam = append(queryParam, label_id)
+
+	var labelhooks []models.LabelHook
+	count, err := o.Raw(sql, queryParam).QueryRows(&labelhooks)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if count == 0 {
+		return nil, nil
+	}
+
+	return labelhooks, nil
+}
+
+// GetLabelHooksByRepoName ...
+func GetLabelHooksByRepoName(repo_name string) ([]models.LabelHook, error) {
+	o := GetOrmer()
+	sql := `select lh.labelhook_id, lh.label_id, lh.repo_name, l.name as label_name,
+			lh.creation_time,lh.update_time
+			from labelhook lh left join label l on lh.label_id = l.label_id
+			where lh.deleted = 0 and lh.repo_name = ?`
+	queryParam := make([]interface{}, 1)
+	queryParam = append(queryParam, repo_name)
 
 	var labelhooks []models.LabelHook
 	count, err := o.Raw(sql, queryParam).QueryRows(&labelhooks)

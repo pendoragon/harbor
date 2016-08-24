@@ -266,7 +266,7 @@ func getProjects(userID int, name string, args ...int64) ([]models.Project, erro
 	queryParam := []interface{}{}
 
 	if userID != 0 { //get user's projects
-		sql = `select distinct p.project_id, p.owner_id, p.name, 
+		sql = `select distinct p.project_id, p.owner_id, p.name, p.manager, p.remark,
 					p.creation_time, p.update_time, p.public, pm.role role 
 			from project p 
 			left join project_member pm 

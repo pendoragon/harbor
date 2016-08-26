@@ -61,9 +61,9 @@ func DeleteProject(projectID int64) error {
 	log.Debugf("DeleteProject projectID: %v", projectID)
 	o := GetOrmer()
 
-	sql := "update project set deleted = ? where project_id = ?"
+	sql := "delete from project where project_id = ?"
 
-	if _, err := o.Raw(sql, 1, projectID).Exec(); err != nil {
+	if _, err := o.Raw(sql, projectID).Exec(); err != nil {
 		log.Errorf("Failed to delete project, error: %v", err)
 		return err
 	}

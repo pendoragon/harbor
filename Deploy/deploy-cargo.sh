@@ -76,6 +76,10 @@ sed 's/- 80:80/- 8002:8002/g' -i ./docker-compose.yml
 
 END
 
+# if you want to deploy cargo on your localhost,
+# please edit /etc/hosts, set cargo.caicloud.io to your IP address
+# e.g. 192.168.1.2  cargo.caicloud.io
+
 echo "prepare config..."
 ./prepare
 

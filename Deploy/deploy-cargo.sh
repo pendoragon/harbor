@@ -6,6 +6,9 @@ set -e
 echo "This shell will launch Harbor project on local with cargo config"
 echo "Usage: ./depoly-cargo.sh"
 
+# block comments
+: <<'END'
+
 # ANSI escape codes
 # Black        0;30     Dark Gray     1;30
 # Red          0;31     Light Red     1;31
@@ -67,13 +70,14 @@ hostname="$ip:8002"
 echo "config hostname to $hostname..."
 sed "s/hostname =.*$/hostname = $hostname/g" -i ./harbor.cfg
 
-echo "prepare config..."
-./prepare
-
 echo "nginx listen on 8002..."
 sed 's/listen.*;$/listen 8002;/g' -i ./config/nginx/nginx.conf
 sed 's/- 80:80/- 8002:8002/g' -i ./docker-compose.yml
 
+END
+
+echo "prepare config..."
+./prepare
 
 echo "build gobase for harbor/ui and harbor/job..."
 docker build -f ../Dockerfile.gobase -t gobase:latest ../

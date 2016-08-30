@@ -30,13 +30,13 @@ import (
 func AddProject(project models.Project) (int64, error) {
 
 	o := GetOrmer()
-	p, err := o.Raw("insert into project (owner_id, name, creation_time, update_time, deleted, public) values (?, ?, ?, ?, ?, ?)").Prepare()
+	p, err := o.Raw("insert into project (owner_id, name, manager, remark, creation_time, update_time, deleted, public) values (?, ?, ?, ?, ?, ?, ?, ?)").Prepare()
 	if err != nil {
 		return 0, err
 	}
 
 	now := time.Now()
-	r, err := p.Exec(project.OwnerID, project.Name, now, now, project.Deleted, project.Public)
+	r, err := p.Exec(project.OwnerID, project.Name, project.Manager, project.Remark, now, now, project.Deleted, project.Public)
 	if err != nil {
 		return 0, err
 	}
@@ -54,6 +54,39 @@ func AddProject(project models.Project) (int64, error) {
 	err = AddAccessLog(accessLog)
 
 	return projectID, err
+}
+
+// Delete set a project's deleted to 1 in the database.
+func DeleteProject(projectID int64) error {
+	log.Debugf("DeleteProject projectID: %v", projectID)
+	o := GetOrmer()
+
+	sql := "delete from project where project_id = ?"
+
+	if _, err := o.Raw(sql, projectID).Exec(); err != nil {
+		log.Errorf("Failed to delete project, error: %v", err)
+		return err
+	}
+
+	// remove labels of this project at the same time
+	sql2 := "delete from label where project_id = ?"
+
+	if _, err := o.Raw(sql2, projectID).Exec(); err != nil {
+		log.Errorf("Failed to delete labels while delete project, error: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// UpdateProject ...
+func UpdateProject(project models.Project) error {
+	o := GetOrmer()
+	if _, err := o.Update(&project, "Manager", "Remark", "Public"); err != nil {
+		log.Errorf("update project failed, error: %v", err)
+		return err
+	}
+	return nil
 }
 
 // IsProjectPublic ...
@@ -96,8 +129,10 @@ func ProjectExists(nameOrID interface{}) (bool, error) {
 func GetProjectByID(id int64) (*models.Project, error) {
 	o := GetOrmer()
 
-	sql := `select p.project_id, p.name, u.username as owner_name, p.owner_id, p.creation_time, p.update_time, p.public  
-		from project p left join user u on p.owner_id = u.user_id where p.deleted = 0 and p.project_id = ?`
+	sql := `select p.project_id, p.name, p.manager, p.remark, u.username as owner_name,
+			p.owner_id, p.creation_time, p.update_time, p.public
+			from project p left join user u on p.owner_id = u.user_id
+			where p.deleted = 0 and p.project_id = ?`
 	queryParam := make([]interface{}, 1)
 	queryParam = append(queryParam, id)
 
@@ -168,9 +203,9 @@ func ToggleProjectPublicity(projectID int64, publicity int) error {
 // 2. the prject is public or the user is a member of the project
 func SearchProjects(userID int) ([]models.Project, error) {
 	o := GetOrmer()
-	sql := `select distinct p.project_id, p.name, p.public 
-		from project p 
-		left join project_member pm on p.project_id = pm.project_id 
+	sql := `select distinct p.project_id, p.name, p.manager, p.remark, p.public
+		from project p
+		left join project_member pm on p.project_id = pm.project_id
 		where (pm.user_id = ? or p.public = 1) and p.deleted = 0`
 
 	var projects []models.Project
@@ -241,7 +276,7 @@ func getProjects(userID int, name string, args ...int64) ([]models.Project, erro
 	queryParam := []interface{}{}
 
 	if userID != 0 { //get user's projects
-		sql = `select distinct p.project_id, p.owner_id, p.name, 
+		sql = `select distinct p.project_id, p.owner_id, p.name, p.manager, p.remark,
 					p.creation_time, p.update_time, p.public, pm.role role 
 			from project p 
 			left join project_member pm 

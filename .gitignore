@@ -1,7 +1,9 @@
 harbor
 Deploy/config/registry/config.yml
+Deploy/config/registry/root.crt
 Deploy/config/ui/env
 Deploy/config/ui/app.conf
+Deploy/config/ui/private_key.pem
 Deploy/config/db/env
 Deploy/config/jobservice/env
 Deploy/ui/harbor_ui

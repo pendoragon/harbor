@@ -79,6 +79,16 @@ func DeleteProject(projectID int64) error {
 	return nil
 }
 
+// UpdateProject ...
+func UpdateProject(project models.Project) error {
+	o := GetOrmer()
+	if _, err := o.Update(&project, "Manager", "Remark", "Public"); err != nil {
+		log.Errorf("update project failed, error: %v", err)
+		return err
+	}
+	return nil
+}
+
 // IsProjectPublic ...
 func IsProjectPublic(projectName string) bool {
 	project, err := GetProjectByName(projectName)

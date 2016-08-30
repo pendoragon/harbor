@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/astaxie/beego"
@@ -169,6 +170,9 @@ func (cc *CommonController) Login() {
 
 	cc.SetSession("userId", user.UserID)
 	cc.SetSession("username", user.Username)
+
+	// render userid if login success
+	cc.CustomAbort(http.StatusOK, strconv.Itoa(user.UserID))
 }
 
 // LogOut Habor UI

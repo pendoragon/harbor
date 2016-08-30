@@ -24,6 +24,8 @@ type Project struct {
 	ProjectID       int64     `orm:"pk;column(project_id)" json:"project_id"`
 	OwnerID         int       `orm:"column(owner_id)" json:"owner_id"`
 	Name            string    `orm:"column(name)" json:"name"`
+	Manager         string    `orm:"column(manager)" json:"manager"`
+	Remark          string    `orm:"column(remark)" json:"remark"`
 	CreationTime    time.Time `orm:"column(creation_time)" json:"creation_time"`
 	CreationTimeStr string    `json:"creation_time_str"`
 	Deleted         int       `orm:"column(deleted)" json:"deleted"`

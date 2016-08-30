@@ -37,6 +37,8 @@ type ProjectAPI struct {
 
 type projectReq struct {
 	ProjectName string `json:"project_name"`
+	Manager     string `json:"manager"`
+	Remark      string `json:"remark"`
 	Public      bool   `json:"public"`
 }
 
@@ -90,7 +92,14 @@ func (p *ProjectAPI) Post() {
 		p.RenderError(http.StatusConflict, "")
 		return
 	}
-	project := models.Project{OwnerID: p.userID, Name: projectName, CreationTime: time.Now(), Public: public}
+	project := models.Project{
+		OwnerID:      p.userID,
+		Name:         projectName,
+		Manager:      req.Manager,
+		Remark:       req.Remark,
+		CreationTime: time.Now(),
+		Public:       public,
+	}
 	projectID, err := dao.AddProject(project)
 	if err != nil {
 		log.Errorf("Failed to add project, error: %v", err)
@@ -102,7 +111,59 @@ func (p *ProjectAPI) Post() {
 		}
 		return
 	}
-	p.Redirect(http.StatusCreated, strconv.FormatInt(projectID, 10))
+
+	// return project id
+	p.RenderError(http.StatusOK, strconv.FormatInt(projectID, 10))
+	// p.Redirect(http.StatusCreated, strconv.FormatInt(projectID, 10))
+}
+
+// Put ...
+func (p *ProjectAPI) Put() {
+	idStr := p.Ctx.Input.Param(":id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		log.Errorf("Error parsing project id: %s, error: %v", idStr, err)
+		p.CustomAbort(http.StatusBadRequest, "invalid project id")
+	}
+
+	var req projectReq
+	public := 1
+	p.DecodeJSONReq(&req)
+	if !req.Public {
+		public = 0
+	}
+
+	updateProject := models.Project{
+		ProjectID: int64(id),
+		Manager:   req.Manager,
+		Remark:    req.Remark,
+		Public:    public,
+	}
+
+	err = dao.UpdateProject(updateProject)
+	if err != nil {
+		log.Errorf("Failed to update project, error: %v", err)
+		dup, _ := regexp.MatchString(dupProjectPattern, err.Error())
+		if dup {
+			p.RenderError(http.StatusConflict, "")
+		} else {
+			p.RenderError(http.StatusInternalServerError, "Failed to add project")
+		}
+		return
+	}
+}
+
+// Delete  ...
+func (p *ProjectAPI) Delete() {
+	idStr := p.Ctx.Input.Param(":id")
+	id, _ := strconv.Atoi(idStr)
+
+	log.Debugf("DELETE /api/projects, id: %v", id)
+
+	if err := dao.DeleteProject(int64(id)); err != nil {
+		log.Errorf("Failed to delete label, error: %v", err)
+		p.RenderError(http.StatusInternalServerError, "Failed to delete label")
+	}
 }
 
 // Head ...

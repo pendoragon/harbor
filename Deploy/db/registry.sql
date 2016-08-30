@@ -47,8 +47,8 @@ create table user (
  reset_uuid varchar(40) DEFAULT NULL,
  salt varchar(40) DEFAULT NULL,
  sysadmin_flag tinyint (1),
- creation_time timestamp,
- update_time timestamp,
+ creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
+ update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  primary key (user_id),
  UNIQUE (username),
  UNIQUE (email)
@@ -62,8 +62,10 @@ create table project (
  project_id int NOT NULL AUTO_INCREMENT,
  owner_id int NOT NULL,
  name varchar (30) NOT NULL,
- creation_time timestamp,
- update_time timestamp,
+ manager varchar (50),
+ remark varchar (500) NOT NULL DEFAULT 'remark',
+ creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
+ update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  deleted tinyint (1) DEFAULT 0 NOT NULL,
  public tinyint (1) DEFAULT 0 NOT NULL,
  primary key (project_id),
@@ -78,8 +80,8 @@ create table project_member (
  project_id int NOT NULL,
  user_id int NOT NULL,
  role int NOT NULL,
- creation_time timestamp,
- update_time timestamp,
+ creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
+ update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  PRIMARY KEY (project_id, user_id),
  FOREIGN KEY (role) REFERENCES role(role_id),
  FOREIGN KEY (project_id) REFERENCES project(project_id),
@@ -89,6 +91,37 @@ create table project_member (
 insert into project_member (project_id, user_id, role, creation_time, update_time) values
 (1, 1, 1, NOW(), NOW());
 
+create table label (
+ label_id int NOT NULL AUTO_INCREMENT,
+ owner_id int NOT NULL,
+ project_id int NOT NULL,
+ name varchar (50) NOT NULL,
+ remark varchar (100) NOT NULL,
+ creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
+ update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ deleted tinyint (1) DEFAULT 0 NOT NULL,
+ PRIMARY KEY (label_id),
+ FOREIGN KEY (owner_id) REFERENCES user(user_id),
+ FOREIGN KEY (project_id) REFERENCES project(project_id) ON DELETE CASCADE,
+ UNIQUE (label_id)
+);
+
+ALTER TABLE label ADD UNIQUE (project_id, name);
+
+create table labelhook (
+ labelhook_id int NOT NULL AUTO_INCREMENT,
+ label_id int NOT NULL,
+ repo_name varchar (50) NOT NULL,
+ creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
+ update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ deleted tinyint (1) DEFAULT 0 NOT NULL,
+ PRIMARY KEY (labelhook_id),
+ FOREIGN KEY (label_id) REFERENCES label(label_id) ON DELETE CASCADE,
+ UNIQUE (labelhook_id)
+);
+
+ALTER TABLE labelhook ADD UNIQUE (label_id, repo_name);
+
 create table access_log (
  log_id int NOT NULL AUTO_INCREMENT,
  user_id int NOT NULL,
@@ -97,7 +130,7 @@ create table access_log (
  repo_tag varchar (128),
  GUID varchar(64), 
  operation varchar(20) NOT NULL,
- op_time timestamp,
+ op_time timestamp DEFAULT CURRENT_TIMESTAMP,
  primary key (log_id),
  FOREIGN KEY (user_id) REFERENCES user(user_id),
  FOREIGN KEY (project_id) REFERENCES project (project_id)
@@ -112,8 +145,8 @@ create table replication_policy (
  description text,
  cron_str varchar(256),
  start_time timestamp NULL,
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+ creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
+ update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  PRIMARY KEY (id)
  );
 
@@ -129,8 +162,8 @@ create table replication_target (
  1 means it's a regulart registry
  */
  target_type tinyint(1) NOT NULL DEFAULT 0,
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+ creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
+ update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  PRIMARY KEY (id)
  );
 
@@ -141,8 +174,8 @@ create table replication_job (
  repository varchar(256) NOT NULL,
  operation  varchar(64) NOT NULL,
  tags   varchar(16384),
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+ creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
+ update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  PRIMARY KEY (id),
  INDEX policy (policy_id)
  );

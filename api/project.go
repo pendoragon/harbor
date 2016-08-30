@@ -117,6 +117,42 @@ func (p *ProjectAPI) Post() {
 	// p.Redirect(http.StatusCreated, strconv.FormatInt(projectID, 10))
 }
 
+// Put ...
+func (p *ProjectAPI) Put() {
+	idStr := p.Ctx.Input.Param(":id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		log.Errorf("Error parsing project id: %s, error: %v", idStr, err)
+		p.CustomAbort(http.StatusBadRequest, "invalid project id")
+	}
+
+	var req projectReq
+	public := 1
+	p.DecodeJSONReq(&req)
+	if !req.Public {
+		public = 0
+	}
+
+	updateProject := models.Project{
+		ProjectID: int64(id),
+		Manager:   req.Manager,
+		Remark:    req.Remark,
+		Public:    public,
+	}
+
+	err = dao.UpdateProject(updateProject)
+	if err != nil {
+		log.Errorf("Failed to update project, error: %v", err)
+		dup, _ := regexp.MatchString(dupProjectPattern, err.Error())
+		if dup {
+			p.RenderError(http.StatusConflict, "")
+		} else {
+			p.RenderError(http.StatusInternalServerError, "Failed to add project")
+		}
+		return
+	}
+}
+
 // Delete  ...
 func (p *ProjectAPI) Delete() {
 	idStr := p.Ctx.Input.Param(":id")

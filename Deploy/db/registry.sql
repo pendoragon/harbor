@@ -92,8 +92,8 @@ create table project_member (
  update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  PRIMARY KEY (project_id, user_id),
  FOREIGN KEY (role) REFERENCES role(role_id),
- FOREIGN KEY (project_id) REFERENCES project(project_id),
- FOREIGN KEY (user_id) REFERENCES user(user_id)
+ FOREIGN KEY (project_id) REFERENCES project(project_id) ON DELETE CASCADE,
+ FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE
  );
 
 insert into project_member (project_id, user_id, role, creation_time, update_time) values
@@ -142,7 +142,7 @@ create table access_log (
  primary key (log_id),
  INDEX pid_optime (project_id, op_time),
  FOREIGN KEY (user_id) REFERENCES user(user_id),
- FOREIGN KEY (project_id) REFERENCES project (project_id)
+ FOREIGN KEY (project_id) REFERENCES project (project_id) ON DELETE CASCADE
 );
 
 create table repository (

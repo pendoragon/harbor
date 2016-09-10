@@ -147,7 +147,7 @@ func (p *ProjectAPI) Put() {
 		if dup {
 			p.RenderError(http.StatusConflict, "")
 		} else {
-			p.RenderError(http.StatusInternalServerError, "Failed to add project")
+			p.RenderError(http.StatusInternalServerError, "Failed to update project")
 		}
 		return
 	}

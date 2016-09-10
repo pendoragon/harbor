@@ -68,6 +68,48 @@ func NewLabelHook(labelhook models.LabelHook) (int64, error) {
 	return labelHookID, err
 }
 
+// UpsertRepoRemark insert a repo_remark to the database or update if exists.
+func UpsertRepoRemark(repoRemark models.RepoRemark) (int64, error) {
+	log.Debugf("UpsertRepoRemark: %v", repoRemark)
+	o := GetOrmer()
+	p, err := o.Raw("insert into repo_remark (repo_name, remark, creation_time, update_time, deleted) values (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE remark = ?").Prepare()
+	if err != nil {
+		return 0, err
+	}
+
+	now := time.Now()
+	r, err := p.Exec(repoRemark.RepoName, repoRemark.Remark, now, now, 0, repoRemark.Remark)
+	if err != nil {
+		return 0, err
+	}
+
+	repoRemarkID, err := r.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return repoRemarkID, err
+}
+
+// GetRepoRemark ...
+func GetRepoRemark(repo_name string) (string, error) {
+	log.Debugf("GetRepoRemark: %v", repo_name)
+	o := GetOrmer()
+	var repo_remarks []models.RepoRemark
+	n, err := o.Raw(`select remark from repo_remark where repo_name = ?`, repo_name).QueryRows(&repo_remarks)
+	log.Debugf("repo_remarks: %v", repo_remarks)
+
+	if err != nil {
+		return "", err
+	}
+
+	if n == 0 {
+		return "", nil
+	}
+
+	return repo_remarks[0].Remark, nil
+}
+
 // Delete remove a label from the database.
 func DeleteLabel(labelID int64) error {
 	log.Debugf("DeleteLabel labelID: %v", labelID)

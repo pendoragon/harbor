@@ -69,6 +69,7 @@ func initRouters() {
 	beego.Router("/api/labelhooks/?:id", &api.LabelHookAPI{})
 	beego.Router("/api/labelhooks/list/?:lid", &api.LabelHookAPI{}, "get:List")
 	beego.Router("/api/labelhooks/list/by_reponame", &api.LabelHookAPI{}, "get:ListLabelHooksByRepoName")
+	beego.Router("/api/reporemarks", &api.RepoRemarkAPI{})
 	beego.Router("/api/users/?:id", &api.UserAPI{})
 	beego.Router("/api/users/:id([0-9]+)/password", &api.UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/internal/syncregistry", &api.InternalAPI{}, "post:SyncRegistry")

@@ -43,3 +43,14 @@ type LabelHook struct {
 	UpdateTime      time.Time `orm:"column(update_time)" json:"update_time"`
 	Deleted         int       `orm:"column(deleted)" json:"deleted"`
 }
+
+// RepoRemark holds the details of a repo remark.
+type RepoRemark struct {
+	RepoRemarkID    int64     `orm:"pk;column(repo_remark_id)" json:"repo_remark_id"`
+	RepoName        string    `orm:"column(repo_name)" json:"repo_name"`
+	Remark          string    `orm:"column(remark)" json:"remark"`
+	CreationTime    time.Time `orm:"column(creation_time)" json:"creation_time"`
+	CreationTimeStr string    `json:"creation_time_str"`
+	UpdateTime      time.Time `orm:"column(update_time)" json:"update_time"`
+	Deleted         int       `orm:"column(deleted)" json:"deleted"`
+}

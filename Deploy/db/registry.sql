@@ -130,6 +130,17 @@ create table labelhook (
 
 ALTER TABLE labelhook ADD UNIQUE (label_id, repo_name);
 
+create table repo_remark (
+ repo_remark_id int NOT NULL AUTO_INCREMENT,
+ repo_name varchar (50) NOT NULL,
+ remark varchar (50) NOT NULL,
+ creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
+ update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ deleted tinyint (1) DEFAULT 0 NOT NULL,
+ PRIMARY KEY (repo_remark_id),
+ UNIQUE (repo_name)
+);
+
 create table access_log (
  log_id int NOT NULL AUTO_INCREMENT,
  user_id int NOT NULL,

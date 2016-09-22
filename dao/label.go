@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -269,4 +271,48 @@ func GetLabelHooksByRepoName(repo_name string) ([]models.LabelHook, error) {
 	}
 
 	return labelhooks, nil
+}
+
+// GetReposByLabelNames ...
+func GetReposByLabelNames(label_names []string) ([]string, error) {
+	// construct mysql query string
+	for i := 0; i < len(label_names); i++ {
+		label_names[i] = "\"" + label_names[i] + "\""
+	}
+	label_names_str := strings.Join(label_names, ",")
+
+	o := GetOrmer()
+	sql := "select label_id from label where name in (" + label_names_str + ")"
+
+	var label_ids []int64
+	count, err := o.Raw(sql).QueryRows(&label_ids)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if count == 0 {
+		return nil, nil
+	}
+
+	var label_ids_str_array []string
+	for j := 0; j < len(label_ids); j++ {
+		label_ids_str_array = append(label_ids_str_array, strconv.Itoa(int(label_ids[j])))
+	}
+	label_ids_str := strings.Join(label_ids_str_array, ",")
+
+	sql = "select repo_name from labelhook where label_id in (" + label_ids_str + ")"
+
+	var repo_names []string
+	count, err = o.Raw(sql).QueryRows(&repo_names)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if count == 0 {
+		return nil, nil
+	}
+
+	return repo_names, nil
 }

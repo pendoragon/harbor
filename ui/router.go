@@ -66,6 +66,7 @@ func initRouters() {
 
 	beego.Router("/api/labels/?:id", &api.LabelAPI{})
 	beego.Router("/api/labels/list/?:pid", &api.LabelAPI{}, "get:List")
+	beego.Router("/api/repos_by_labelnames", &api.LabelAPI{}, "post:ListReposByLabelNames")
 	beego.Router("/api/labelhooks/?:id", &api.LabelHookAPI{})
 	beego.Router("/api/labelhooks/list/?:lid", &api.LabelHookAPI{}, "get:List")
 	beego.Router("/api/labelhooks/list/by_reponame", &api.LabelHookAPI{}, "get:ListLabelHooksByRepoName")

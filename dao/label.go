@@ -253,7 +253,7 @@ func GetLabelHooksByLabelID(label_id int64) ([]models.LabelHook, error) {
 func GetLabelHooksByRepoName(repo_name string) ([]models.LabelHook, error) {
 	o := GetOrmer()
 	sql := `select lh.labelhook_id, lh.label_id, lh.repo_name, l.name as label_name,
-			lh.creation_time,lh.update_time
+			lh.creation_time, lh.update_time
 			from labelhook lh left join label l on lh.label_id = l.label_id
 			where lh.deleted = 0 and lh.repo_name = ?`
 	queryParam := make([]interface{}, 1)
@@ -301,7 +301,7 @@ func GetReposByLabelNames(label_names []string) ([]string, error) {
 	}
 	label_ids_str := strings.Join(label_ids_str_array, ",")
 
-	sql = "select repo_name from labelhook where label_id in (" + label_ids_str + ")"
+	sql = "select distinct(repo_name) from labelhook where label_id in (" + label_ids_str + ")"
 
 	var repo_names []string
 	count, err = o.Raw(sql).QueryRows(&repo_names)

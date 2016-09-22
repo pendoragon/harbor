@@ -36,9 +36,10 @@ type LabelAPI struct {
 }
 
 type labelReq struct {
-	ProjectID   int64  `json:"project_id"`
-	LabelName   string `json:"label_name"`
-	LabelRemark string `json:"label_remark"`
+	ProjectID   int64    `json:"project_id"`
+	LabelName   string   `json:"label_name"`
+	LabelNames  []string `json:"label_names"`
+	LabelRemark string   `json:"label_remark"`
 }
 
 const labelNameMaxLen int = 50
@@ -164,6 +165,24 @@ func (l *LabelAPI) List() {
 	}
 
 	l.Data["json"] = labels
+	l.ServeJSON()
+}
+
+// List repos by label names
+func (l *LabelAPI) ListReposByLabelNames() {
+	var req labelReq
+	l.DecodeJSONReq(&req)
+	log.Debugf("POST api/repos_by_labelnames, req: %v", req)
+
+	repo_names, err := dao.GetReposByLabelNames(req.LabelNames)
+	if err != nil {
+		log.Errorf("dao.GetReposByLabelNames error: %v", err)
+		l.RenderError(http.StatusBadRequest, fmt.Sprintf("invalid GetReposByLabelNames request: %v", err))
+		return
+	}
+
+	log.Debugf("POST api/repos_by_labelnames, result: %v", repo_names)
+	l.Data["json"] = repo_names
 	l.ServeJSON()
 }
 

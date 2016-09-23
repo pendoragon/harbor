@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"github.com/vmware/harbor/models"
 	"github.com/vmware/harbor/utils/log"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -281,10 +280,16 @@ func GetReposByLabelNames(label_names []string) ([]string, error) {
 	}
 	label_names_str := strings.Join(label_names, ",")
 
+	// select from mysql table WHERE field='$array'?
+	// ref:
+	// http://stackoverflow.com/a/2382847/3167471
 	o := GetOrmer()
 	sql := "select label_id from label where name in (" + label_names_str + ")"
 
-	var label_ids []int64
+	// make sure dose QueryRows do type casting when map query results to container?
+	// answer is YES
+	// issue: https://github.com/astaxie/beego/issues/2177
+	var label_ids []string
 	count, err := o.Raw(sql).QueryRows(&label_ids)
 
 	if err != nil {
@@ -295,11 +300,7 @@ func GetReposByLabelNames(label_names []string) ([]string, error) {
 		return nil, nil
 	}
 
-	var label_ids_str_array []string
-	for j := 0; j < len(label_ids); j++ {
-		label_ids_str_array = append(label_ids_str_array, strconv.Itoa(int(label_ids[j])))
-	}
-	label_ids_str := strings.Join(label_ids_str_array, ",")
+	label_ids_str := strings.Join(label_ids, ",")
 
 	sql = "select distinct(repo_name) from labelhook where label_id in (" + label_ids_str + ")"
 

@@ -124,6 +124,30 @@ func (ra *RepositoryAPI) List() {
 	ra.ServeJSON()
 }
 
+// List ...
+func (ra *RepositoryAPI) List() {
+	repoList, err := cache.GetRepoFromCache()
+	if err != nil {
+		log.Errorf("Failed to get repo from cache, error: %v", err)
+		ra.RenderError(http.StatusInternalServerError, "internal sever error")
+	}
+
+	repoName := ra.GetString("repo_name")
+	var resp []string
+
+	if len(repoName) > 0 {
+		for _, r := range repoList {
+			if strings.Contains(r, "/") && strings.Contains(r[strings.LastIndex(r, "/")+1:], repoName) {
+				resp = append(resp, r)
+			}
+		}
+		ra.Data["json"] = resp
+	} else {
+		ra.Data["json"] = repoList
+	}
+	ra.ServeJSON()
+}
+
 // Delete ...
 func (ra *RepositoryAPI) Delete() {
 	repoName := ra.GetString("repo_name")

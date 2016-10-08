@@ -11,3 +11,5 @@ Deploy/jobservice/harbor_jobservice
 ui/ui
 *.pyc
 jobservice/test
+
+.DS_Store

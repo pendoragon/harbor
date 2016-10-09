@@ -119,6 +119,7 @@ ALTER TABLE label ADD UNIQUE (project_id, name);
 create table labelhook (
  labelhook_id int NOT NULL AUTO_INCREMENT,
  label_id int NOT NULL,
+ label_name varchar (50) NOT NULL,
  repo_name varchar (50) NOT NULL,
  creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
  update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

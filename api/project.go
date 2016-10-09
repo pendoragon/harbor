@@ -40,7 +40,7 @@ type projectReq struct {
 	ProjectName string `json:"project_name"`
 	Manager     string `json:"manager"`
 	Remark      string `json:"remark"`
-	Public      int   `json:"public"`
+	Public      int    `json:"public"`
 }
 
 const projectNameMaxLen int = 30
@@ -127,11 +127,8 @@ func (p *ProjectAPI) Put() {
 	}
 
 	var req projectReq
-	public := 1
 	p.DecodeJSONReq(&req)
-	if !req.Public {
-		public = 0
-	}
+	public := req.Public
 
 	updateProject := models.Project{
 		ProjectID: int64(id),
@@ -156,14 +153,41 @@ func (p *ProjectAPI) Put() {
 // Delete  ...
 func (p *ProjectAPI) Delete() {
 	idStr := p.Ctx.Input.Param(":id")
-	id, _ := strconv.Atoi(idStr)
+	project_id, _ := strconv.ParseInt(idStr, 10, 64)
+	// project_id = int64(project_id)
 
-	log.Debugf("DELETE /api/projects, id: %v", id)
+	log.Debugf("DELETE /api/projects, project_id: %v", project_id)
 
-	if err := dao.DeleteProject(int64(id)); err != nil {
+	if project_id == 0 {
+		p.CustomAbort(http.StatusBadRequest, "project ID is required")
+	}
+
+	userID := p.ValidateUser()
+
+	if !hasProjectAdminRole(userID, project_id) {
+		p.CustomAbort(http.StatusForbidden, "User don't have project admin role")
+	}
+
+	if err := dao.DeleteProject(project_id); err != nil {
 		log.Errorf("Failed to delete label, error: %v", err)
 		p.RenderError(http.StatusInternalServerError, "Failed to delete label")
 	}
+
+	// TODO, CPH
+	// failed to add access log: Error 1452: Cannot add or update a child row:
+	// a foreign key constraint fails (`registry`.`access_log`, CONSTRAINT `access_log_ibfk_2`
+	// FOREIGN KEY (`project_id`) REFERENCES `project` (`project_id`))
+
+	// go func() {
+	// 	if err := dao.AddAccessLog(models.AccessLog{
+	// 		UserID:    userID,
+	// 		ProjectID: project_id,
+	// 		RepoName:  p.projectName,
+	// 		Operation: "delete",
+	// 	}); err != nil {
+	// 		log.Errorf("failed to add access log: %v", err)
+	// 	}
+	// }()
 }
 
 // Head ...
@@ -211,53 +235,6 @@ func (p *ProjectAPI) Get() {
 
 	p.Data["json"] = project
 	p.ServeJSON()
-}
-
-// Delete ...
-func (p *ProjectAPI) Delete() {
-	if p.projectID == 0 {
-		p.CustomAbort(http.StatusBadRequest, "project ID is required")
-	}
-
-	userID := p.ValidateUser()
-
-	if !hasProjectAdminRole(userID, p.projectID) {
-		p.CustomAbort(http.StatusForbidden, "")
-	}
-
-	contains, err := projectContainsRepo(p.projectName)
-	if err != nil {
-		log.Errorf("failed to check whether project %s contains any repository: %v", p.projectName, err)
-		p.CustomAbort(http.StatusInternalServerError, "")
-	}
-	if contains {
-		p.CustomAbort(http.StatusPreconditionFailed, "project contains repositores, can not be deleted")
-	}
-
-	contains, err = projectContainsPolicy(p.projectID)
-	if err != nil {
-		log.Errorf("failed to check whether project %s contains any policy: %v", p.projectName, err)
-		p.CustomAbort(http.StatusInternalServerError, "")
-	}
-	if contains {
-		p.CustomAbort(http.StatusPreconditionFailed, "project contains policies, can not be deleted")
-	}
-
-	if err = dao.DeleteProject(p.projectID); err != nil {
-		log.Errorf("failed to delete project %d: %v", p.projectID, err)
-		p.CustomAbort(http.StatusInternalServerError, "")
-	}
-
-	go func() {
-		if err := dao.AddAccessLog(models.AccessLog{
-			UserID:    userID,
-			ProjectID: p.projectID,
-			RepoName:  p.projectName,
-			Operation: "delete",
-		}); err != nil {
-			log.Errorf("failed to add access log: %v", err)
-		}
-	}()
 }
 
 func projectContainsRepo(name string) (bool, error) {

@@ -25,6 +25,7 @@ type RepoRecord struct {
 	OwnerID      int64     `orm:"column(owner_id)"  json:"owner_id"`
 	ProjectName  string    `orm:"-"`
 	ProjectID    int64     `orm:"column(project_id)"  json:"project_id"`
+	Manager      string    `orm:"column(manager)" json:"manager"`
 	Description  string    `orm:"column(description)" json:"description"`
 	PullCount    int64     `orm:"column(pull_count)" json:"pull_count"`
 	StarCount    int64     `orm:"column(star_count)" json:"star_count"`

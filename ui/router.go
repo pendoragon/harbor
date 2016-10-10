@@ -75,6 +75,7 @@ func initRouters() {
 	beego.Router("/api/users/:id([0-9]+)/password", &api.UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/internal/syncregistry", &api.InternalAPI{}, "post:SyncRegistry")
 	beego.Router("/api/repositories", &api.RepositoryAPI{})
+	beego.Router("/api/repositories/conditions", &api.RepositoryAPI{}, "post:GetRepositoryWithConditions")
 	beego.Router("/api/repositories/tags", &api.RepositoryAPI{}, "get:GetTags")
 	beego.Router("/api/repositories/manifests", &api.RepositoryAPI{}, "get:GetManifests")
 	beego.Router("/api/repositories/list", &api.RepositoryAPI{}, "get:List")

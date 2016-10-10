@@ -44,6 +44,20 @@ type RepositoryAPI struct {
 	BaseAPI
 }
 
+type repositoryReq struct {
+	ProjectIDs []string `json:"project_ids"`
+	LabelIDs   []string `json:"label_ids"`
+	RepoName   string   `json:"repo_name"`
+	Page       int64    `json:"page"`
+	PageSize   int64    `json:"page_size"`
+}
+
+type repositoryRes struct {
+	Total    int                  `json:"total"`
+	PageSize int64                `json:"page_size"`
+	Repos    []*models.RepoRecord `json:"repos"`
+}
+
 // Get ...
 func (ra *RepositoryAPI) Get() {
 	projectID, err := ra.GetInt64("project_id")
@@ -98,6 +112,29 @@ func (ra *RepositoryAPI) Get() {
 	ra.setPaginationHeader(total, page, pageSize)
 
 	ra.Data["json"] = repositories
+	ra.ServeJSON()
+}
+
+// GetRepositoryWithConditions ...
+func (ra *RepositoryAPI) GetRepositoryWithConditions() {
+	var req repositoryReq
+	ra.DecodeJSONReq(&req)
+
+	total, repositories, err := dao.GetRepositoryWithConditions(req.ProjectIDs, req.LabelIDs, req.RepoName, req.Page, req.PageSize)
+	if err != nil {
+		log.Errorf("failed to get repository: %v", err)
+		ra.CustomAbort(http.StatusInternalServerError, "failed to get repository with conditions")
+	}
+
+	log.Debugf("total: %v", total)
+
+	repository_res := repositoryRes{
+		Total:    total,
+		Repos:    repositories,
+		PageSize: req.PageSize,
+	}
+
+	ra.Data["json"] = repository_res
 	ra.ServeJSON()
 }
 

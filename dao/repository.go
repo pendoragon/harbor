@@ -17,9 +17,11 @@ package dao
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/astaxie/beego/orm"
 	"github.com/vmware/harbor/models"
+	"github.com/vmware/harbor/utils/log"
 )
 
 // AddRepository adds a repo to the database.
@@ -96,6 +98,89 @@ func GetRepositoryByProjectName(name string) ([]*models.RepoRecord, error) {
 	repos := []*models.RepoRecord{}
 	_, err := GetOrmer().Raw(sql, name).QueryRows(&repos)
 	return repos, err
+}
+
+// GetRepositoryWithConditions ...
+func GetRepositoryWithConditions(project_ids []string, label_ids []string, repo_name string, page int64, page_size int64) (int, []*models.RepoRecord, error) {
+	if page <= 0 || page_size <= 0 {
+		return 0, nil, fmt.Errorf("page and page_size should be greater than 0")
+	}
+
+	labelhooks := []*models.LabelHook{}
+	var pick_repo_names []string
+
+	if len(label_ids) > 0 {
+		label_ids_str := strings.Join(label_ids, ",")
+		labelhook_sql := "select lb.repo_name from labelhook lb where lb.label_id in (" + label_ids_str + ")"
+		_, err := GetOrmer().Raw(labelhook_sql).QueryRows(&labelhooks)
+
+		if err != nil {
+			return 0, nil, err
+		}
+
+		log.Debugf("get labelhooks: %v", labelhooks)
+	}
+
+	// construct pick_repo_names
+	if len(labelhooks) > 0 {
+		for _, lebelhook := range labelhooks {
+			pick_repo_names = append(pick_repo_names, lebelhook.RepoName)
+		}
+		log.Debugf("pick_repo_names: %v", pick_repo_names)
+	}
+
+	// ref:
+	// http://stackoverflow.com/a/2439870/3167471
+	sql := "select SQL_CALC_FOUND_ROWS * from repository"
+
+	if len(project_ids) > 0 {
+		project_ids_str := strings.Join(project_ids, ",")
+		sql += " where project_id in (" + project_ids_str + ")"
+	}
+
+	if len(project_ids) > 0 && repo_name != "" {
+		sql += " and name like \"%" + repo_name + "%\""
+	} else if repo_name != "" {
+		sql += " where name like \"%" + repo_name + "%\""
+	}
+
+	if len(pick_repo_names) > 0 {
+		for i := 0; i < len(pick_repo_names); i++ {
+			pick_repo_names[i] = "\"" + pick_repo_names[i] + "\""
+		}
+
+		pick_repo_names_str := strings.Join(pick_repo_names, ",")
+		if strings.Contains(sql, "where") {
+			sql += " and name in (" + pick_repo_names_str + ")"
+		} else {
+			sql += " where name in (" + pick_repo_names_str + ")"
+		}
+	}
+
+	offset := (page - 1) * page_size
+
+	sql += " limit ?,?"
+	log.Debugf("sql: %v", sql)
+
+	repos := []*models.RepoRecord{}
+	_, err := GetOrmer().Raw(sql, offset, page_size).QueryRows(&repos)
+
+	if err != nil {
+		return 0, nil, err
+	}
+
+	// get total count
+	sql = "select FOUND_ROWS()"
+	var total []int
+	_, err = GetOrmer().Raw(sql).QueryRows(&total)
+
+	if err != nil {
+		return 0, nil, err
+	}
+
+	log.Debugf("total: %v", total)
+
+	return total[0], repos, err
 }
 
 //GetTopRepos returns the most popular repositories

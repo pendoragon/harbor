@@ -50,13 +50,13 @@ func NewLabel(label models.Label) (int64, error) {
 func NewLabelHook(labelhook models.LabelHook) (int64, error) {
 	log.Debugf("NewLabelHook: %v", labelhook)
 	o := GetOrmer()
-	p, err := o.Raw("insert into labelhook (label_id, repo_name, creation_time, update_time, deleted) values (?, ?, ?, ?, ?)").Prepare()
+	p, err := o.Raw("insert into labelhook (label_id, label_name, repo_name, creation_time, update_time, deleted) values (?, ?, ?, ?, ?, ?)").Prepare()
 	if err != nil {
 		return 0, err
 	}
 
 	now := time.Now()
-	r, err := p.Exec(labelhook.LabelID, labelhook.RepoName, now, now, 0)
+	r, err := p.Exec(labelhook.LabelID, labelhook.LabelName, labelhook.RepoName, now, now, 0)
 	if err != nil {
 		return 0, err
 	}
@@ -186,6 +186,33 @@ func LabelHookExists(nameOrID interface{}) (bool, error) {
 		return false, err
 	}
 	return num > 0, nil
+}
+
+// GetLabelByID ...
+func GetLabelByID(label_id int64) ([]models.Label, error) {
+	o := GetOrmer()
+
+	if label_id < 0 {
+		return nil, fmt.Errorf("Invalid label_id: %v", label_id)
+	}
+
+	sql := `select * from label l where l.deleted = 0 and l.label_id = ?`
+	queryParam := make([]interface{}, 1)
+
+	queryParam = append(queryParam, label_id)
+
+	var labels []models.Label
+	count, err := o.Raw(sql, queryParam).QueryRows(&labels)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if count == 0 {
+		return nil, nil
+	}
+
+	return labels, nil
 }
 
 // GetLabelsByProjectID ...

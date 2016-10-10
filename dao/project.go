@@ -56,7 +56,7 @@ func AddProject(project models.Project) (int64, error) {
 	return projectID, err
 }
 
-// Delete set a project's deleted to 1 in the database.
+// Delete remove a project and labels of this project in the database.
 func DeleteProject(projectID int64) error {
 	log.Debugf("DeleteProject projectID: %v", projectID)
 	o := GetOrmer()
@@ -310,13 +310,4 @@ func getProjects(userID int, name string, args ...int64) ([]models.Project, erro
 	_, err := o.Raw(sql, queryParam).QueryRows(&projects)
 
 	return projects, err
-}
-
-// DeleteProject ...
-func DeleteProject(id int64) error {
-	sql := `update project 
-		set deleted = 1, name = concat(name,"#",project_id) 
-		where project_id = ?`
-	_, err := GetOrmer().Raw(sql, id).Exec()
-	return err
 }

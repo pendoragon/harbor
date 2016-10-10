@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strings"
 
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
@@ -41,6 +42,20 @@ import (
 // in the query string as the web framework can not parse the URL if it contains veriadic sectors.
 type RepositoryAPI struct {
 	BaseAPI
+}
+
+type repositoryReq struct {
+	ProjectIDs []string `json:"project_ids"`
+	LabelIDs   []string `json:"label_ids"`
+	RepoName   string   `json:"repo_name"`
+	Page       int64    `json:"page"`
+	PageSize   int64    `json:"page_size"`
+}
+
+type repositoryRes struct {
+	Total    int                  `json:"total"`
+	PageSize int64                `json:"page_size"`
+	Repos    []*models.RepoRecord `json:"repos"`
 }
 
 // Get ...
@@ -100,27 +115,26 @@ func (ra *RepositoryAPI) Get() {
 	ra.ServeJSON()
 }
 
-// List ...
-func (ra *RepositoryAPI) List() {
-	repoList, err := cache.GetRepoFromCache()
+// GetRepositoryWithConditions ...
+func (ra *RepositoryAPI) GetRepositoryWithConditions() {
+	var req repositoryReq
+	ra.DecodeJSONReq(&req)
+
+	total, repositories, err := dao.GetRepositoryWithConditions(req.ProjectIDs, req.LabelIDs, req.RepoName, req.Page, req.PageSize)
 	if err != nil {
-		log.Errorf("Failed to get repo from cache, error: %v", err)
-		ra.RenderError(http.StatusInternalServerError, "internal sever error")
+		log.Errorf("failed to get repository: %v", err)
+		ra.CustomAbort(http.StatusInternalServerError, "failed to get repository with conditions")
 	}
 
-	repoName := ra.GetString("repo_name")
-	var resp []string
+	log.Debugf("total: %v", total)
 
-	if len(repoName) > 0 {
-		for _, r := range repoList {
-			if strings.Contains(r, "/") && strings.Contains(r[strings.LastIndex(r, "/")+1:], repoName) {
-				resp = append(resp, r)
-			}
-		}
-		ra.Data["json"] = resp
-	} else {
-		ra.Data["json"] = repoList
+	repository_res := repositoryRes{
+		Total:    total,
+		Repos:    repositories,
+		PageSize: req.PageSize,
 	}
+
+	ra.Data["json"] = repository_res
 	ra.ServeJSON()
 }
 

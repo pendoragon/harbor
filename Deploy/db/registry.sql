@@ -119,6 +119,7 @@ ALTER TABLE label ADD UNIQUE (project_id, name);
 create table labelhook (
  labelhook_id int NOT NULL AUTO_INCREMENT,
  label_id int NOT NULL,
+ label_name varchar (50) NOT NULL,
  repo_name varchar (50) NOT NULL,
  creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
  update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -161,6 +162,7 @@ create table repository (
  name varchar(255) NOT NULL,
  project_id int NOT NULL,
  owner_id int NOT NULL,
+ manager varchar (50),
  description text,
  pull_count int DEFAULT 0 NOT NULL,
  star_count int DEFAULT 0 NOT NULL,

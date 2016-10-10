@@ -129,9 +129,7 @@ func GetRepositoryWithConditions(project_ids []string, label_ids []string, repo_
 		log.Debugf("pick_repo_names: %v", pick_repo_names)
 	}
 
-	// ref:
-	// http://stackoverflow.com/a/2439870/3167471
-	sql := "select SQL_CALC_FOUND_ROWS * from repository"
+	sql := "select * from repository"
 
 	if len(project_ids) > 0 {
 		project_ids_str := strings.Join(project_ids, ",")
@@ -157,6 +155,9 @@ func GetRepositoryWithConditions(project_ids []string, label_ids []string, repo_
 		}
 	}
 
+	// for count without limit
+	sql_count := sql
+
 	offset := (page - 1) * page_size
 
 	sql += " limit ?,?"
@@ -170,9 +171,12 @@ func GetRepositoryWithConditions(project_ids []string, label_ids []string, repo_
 	}
 
 	// get total count
-	sql = "select FOUND_ROWS()"
+	// ref:
+	// http://stackoverflow.com/questions/186588/which-is-fastest-select-sql-calc-found-rows-from-table-or-select-count
+	sql_count = strings.Replace(sql_count, "*", "COUNT(*)", 1)
+	log.Debugf("sql_count: %v", sql_count)
 	var total []int
-	_, err = GetOrmer().Raw(sql).QueryRows(&total)
+	_, err = GetOrmer().Raw(sql_count).QueryRows(&total)
 
 	if err != nil {
 		return 0, nil, err

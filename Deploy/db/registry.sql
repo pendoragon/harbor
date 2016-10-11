@@ -169,6 +169,7 @@ create table repository (
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
  primary key (repository_id),
+ FOREIGN KEY (project_id) REFERENCES project (project_id) ON DELETE CASCADE,
  UNIQUE (name)
 );
 

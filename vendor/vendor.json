@@ -301,6 +301,30 @@
 			"revisionTime": "2013-12-25T09:52:30Z"
 		},
 		{
+			"checksumSHA1": "QAJEhTx/Ei8GttMhtgWabJLh73k=",
+			"path": "github.com/optiopay/klar",
+			"revision": "c0b0cfa5a086ac42b44e4ff93150639cea97c835",
+			"revisionTime": "2016-09-01T10:29:48Z",
+			"version": "v1.1",
+			"versionExact": "v1.1"
+		},
+		{
+			"checksumSHA1": "liy67lXJCFLRtr8OfBJPxc7PeoE=",
+			"path": "github.com/optiopay/klar/clair",
+			"revision": "c0b0cfa5a086ac42b44e4ff93150639cea97c835",
+			"revisionTime": "2016-09-01T10:29:48Z",
+			"version": "v1.1",
+			"versionExact": "v1.1"
+		},
+		{
+			"checksumSHA1": "souRX6FypJmW3UxP2qtPq3wBJMI=",
+			"path": "github.com/optiopay/klar/docker",
+			"revision": "c0b0cfa5a086ac42b44e4ff93150639cea97c835",
+			"revisionTime": "2016-09-01T10:29:48Z",
+			"version": "v1.1",
+			"versionExact": "v1.1"
+		},
+		{
 			"checksumSHA1": "1MGpGDQqnUoRpv7VEcQrXOBydXE=",
 			"path": "golang.org/x/crypto/pbkdf2",
 			"revision": "5f961cd492ac9d43fc33a8ef646bae79d113fd97",

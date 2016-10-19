@@ -36,6 +36,15 @@ func AddRepository(repo models.RepoRecord) error {
 	return err
 }
 
+// AddRepositoryVulnerability adds a repo vulnerability to the database.
+func AddRepositoryVulnerability(repo_vulnerability models.RepoVulnerability) error {
+	o := GetOrmer()
+	sql := "insert into repo_vulnerability (repo_name, tag, v_count, vulnerabilities, creation_time, update_time) values (?, ?, ?, ?, NOW(), NOW())"
+
+	_, err := o.Raw(sql, repo_vulnerability.RepoName, repo_vulnerability.Tag, repo_vulnerability.VulnerabilityCount, repo_vulnerability.Vulnerabilities).Exec()
+	return err
+}
+
 // GetRepositoryByName ...
 func GetRepositoryByName(name string) (*models.RepoRecord, error) {
 	o := GetOrmer()

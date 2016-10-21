@@ -39,9 +39,9 @@ func (rp *RepoRecord) TableName() string {
 	return "repository"
 }
 
-// RepoVulnerability holds the vulnerability of an repository in DB.
+// ImageVulnerability holds the vulnerability of an image in DB.
 // CPH, TODO, As mysql 5.6 not support JSON type, so use string to save vulnerabilities
-type RepoVulnerability struct {
+type ImageVulnerability struct {
 	RVID               string `orm:"column(rv_id);pk" json:"rv_id"`
 	RepoName           string `orm:"column(repo_name)" json:"repo_name"`
 	Tag                string `orm:"column(tag)" json:"tag"`

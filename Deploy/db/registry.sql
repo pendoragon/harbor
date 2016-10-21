@@ -142,7 +142,7 @@ create table repo_remark (
  UNIQUE (repo_name)
 );
 
-create table repo_vulnerability (
+create table image_vulnerability (
  rv_id int NOT NULL AUTO_INCREMENT,
  repo_name varchar (50) NOT NULL,
  tag varchar (50) NOT NULL,

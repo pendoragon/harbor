@@ -86,6 +86,9 @@ func (n *NotificationHandler) Post() {
 				repoRecord := models.RepoRecord{Name: repository, OwnerName: user, ProjectName: project}
 				if err := dao.AddRepository(repoRecord); err != nil {
 					log.Errorf("Error happens when adding repository: %v", err)
+				} else {
+					// Trigger repo analysis here
+					go api.TriggerRepositoryAnalysisAndSaveResult(repository, tag)
 				}
 			}()
 

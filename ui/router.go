@@ -78,6 +78,7 @@ func initRouters() {
 	beego.Router("/api/repositories/conditions", &api.RepositoryAPI{}, "post:GetRepositoryWithConditions")
 	beego.Router("/api/repositories/tags", &api.RepositoryAPI{}, "get:GetTags")
 	beego.Router("/api/repositories/manifests", &api.RepositoryAPI{}, "get:GetManifests")
+	beego.Router("/api/repositories/vulnerabilities", &api.RepositoryAPI{}, "get:GetVulnerabilities")
 	beego.Router("/api/repositories/list", &api.RepositoryAPI{}, "get:List")
 	beego.Router("/api/repositories/analysis", &api.RepoAnalysisAPI{})
 	beego.Router("/api/jobs/replication/", &api.RepJobAPI{}, "get:List")

@@ -423,6 +423,33 @@ func (ra *RepositoryAPI) GetManifests() {
 	ra.ServeJSON()
 }
 
+func (ra *RepositoryAPI) GetVulnerabilities() {
+	repoName := ra.GetString("repo_name")
+	if len(repoName) == 0 {
+		ra.CustomAbort(http.StatusBadRequest, "repo_name is nil")
+	}
+
+	tag := ra.GetString("tag")
+	if len(repoName) == 0 {
+		ra.CustomAbort(http.StatusBadRequest, "tag is nil")
+	}
+
+	vulnerabilities, err := dao.GetImageVulnerability(repoName, tag)
+	log.Debugf("get vulnerabilities: %v", vulnerabilities)
+
+	if err != nil {
+		log.Errorf("failed to get vulnerabilities: %v", err)
+		ra.CustomAbort(http.StatusInternalServerError, "failed to get vulnerabilities")
+	}
+
+	if len(vulnerabilities) <= 0 {
+		ra.CustomAbort(http.StatusOK, "")
+	}
+
+	log.Debugf("get vulnerabilities[0]: %v", vulnerabilities[0])
+	ra.CustomAbort(http.StatusOK, vulnerabilities[0].Vulnerabilities)
+}
+
 func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repository, err error) {
 	endpoint := os.Getenv("REGISTRY_URL")
 

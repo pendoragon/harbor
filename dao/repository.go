@@ -45,6 +45,14 @@ func AddImageVulnerability(image_vulnerability models.ImageVulnerability) error 
 	return err
 }
 
+// GetImageVulnerability ...
+func GetImageVulnerability(repo_name string, tag string) ([]*models.ImageVulnerability, error) {
+	sql := `select * from image_vulnerability where repo_name = ? and tag = ?`
+	vulnerabilities := []*models.ImageVulnerability{}
+	_, err := GetOrmer().Raw(sql, repo_name, tag).QueryRows(&vulnerabilities)
+	return vulnerabilities, err
+}
+
 // GetRepositoryByName ...
 func GetRepositoryByName(name string) (*models.RepoRecord, error) {
 	o := GetOrmer()

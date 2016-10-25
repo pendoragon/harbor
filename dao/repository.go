@@ -36,6 +36,23 @@ func AddRepository(repo models.RepoRecord) error {
 	return err
 }
 
+// AddImageVulnerability adds a image vulnerability to the database.
+func AddImageVulnerability(image_vulnerability models.ImageVulnerability) error {
+	o := GetOrmer()
+	sql := "insert into image_vulnerability (repo_name, tag, v_count, vulnerabilities, creation_time, update_time) values (?, ?, ?, ?, NOW(), NOW())"
+
+	_, err := o.Raw(sql, image_vulnerability.RepoName, image_vulnerability.Tag, image_vulnerability.VulnerabilityCount, image_vulnerability.Vulnerabilities).Exec()
+	return err
+}
+
+// GetImageVulnerability ...
+func GetImageVulnerability(repo_name string, tag string) ([]*models.ImageVulnerability, error) {
+	sql := `select * from image_vulnerability where repo_name = ? and tag = ?`
+	vulnerabilities := []*models.ImageVulnerability{}
+	_, err := GetOrmer().Raw(sql, repo_name, tag).QueryRows(&vulnerabilities)
+	return vulnerabilities, err
+}
+
 // GetRepositoryByName ...
 func GetRepositoryByName(name string) (*models.RepoRecord, error) {
 	o := GetOrmer()

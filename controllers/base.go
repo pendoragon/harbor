@@ -170,6 +170,7 @@ func (cc *CommonController) Login() {
 
 	cc.SetSession("userId", user.UserID)
 	cc.SetSession("username", user.Username)
+	cc.SetSession("password", password)
 
 	// render userid if login success
 	cc.CustomAbort(http.StatusOK, strconv.Itoa(user.UserID))

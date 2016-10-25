@@ -16,6 +16,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -163,11 +164,18 @@ func TriggerRepositoryAnalysisAndSaveResult(repo string, tag string) error {
 		return fmt.Errorf("repo analysis error: %v", err)
 	}
 
+	vulnerabilities_bytes, err := json.Marshal(&vulnerabilities)
+
+	if err != nil {
+		log.Errorf("json.Marshal error: %v", err)
+		return fmt.Errorf("json.Marshal error: %v", err)
+	}
+
 	ImageVulnerability := models.ImageVulnerability{
 		RepoName:           repo,
 		Tag:                tag,
 		VulnerabilityCount: len(vulnerabilities),
-		Vulnerabilities:    fmt.Sprintf("%v", vulnerabilities),
+		Vulnerabilities:    string(vulnerabilities_bytes),
 	}
 
 	err = dao.AddImageVulnerability(ImageVulnerability)

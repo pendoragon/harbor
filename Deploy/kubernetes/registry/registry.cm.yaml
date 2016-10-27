@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: harbor-registry-config
+  namespace: harbor
+data:
+  config: |
+    version: 0.1
+    log:
+      level: debug
+      fields:
+        service: registry
+    storage:
+      #oss:
+      #    accesskeyid: DELETED
+      #    accesskeysecret: DETELED
+      #    region: oss-cn-hangzhou
+      #    internal: false
+      #    bucket: caicloud-registry-canary
+      #    rootdirectory: /storage/
+      filesystem:
+        rootdirectory: /storage
+      cache:
+        layerinfo: inmemory
+      maintenance:
+        uploadpurging:
+          enabled: false
+      delete:
+        enabled: true
+    http:
+      addr: :5000
+      secret: placeholder
+      debug:
+        addr: localhost:5001
+    auth:
+      token:
+        issuer: registry-token-issuer
+        realm: https://test.caicloud.io/service/token
+        rootcertbundle: /etc/docker/registry/root.crt
+        service: token-service
+    notifications:
+      endpoints:
+        - name: harbor
+          disabled: false
+          url: http://ui/service/notifications
+          timeout: 3000ms
+          threshold: 5
+          backoff: 1s
+
+  cert: |
+    -----BEGIN CERTIFICATE-----
+    MIIHEjCCBPqgAwIBAgIJAP97CYxn08d5MA0GCSqGSIb3DQEBBQUAMIG2MQswCQYD
+    VQQGEwJDTjERMA8GA1UECBMIWmhlSmlhbmcxETAPBgNVBAcTCEhhbmdaaG91MS8w
+    LQYDVQQKEyZIYW5nemhvdSBDYWlDbG91ZCBUZWNobm9sb2d5IENvLiwgTHRkLjEW
+    MBQGA1UECxMNSVQgRGVwYXJ0bWVudDEWMBQGA1UEAxQNKi5jYWljbG91ZC5pbzEg
+    MB4GCSqGSIb3DQEJARYRY2VucGhAY2FpY2xvdWQuaW8wHhcNMTYxMDE4MDU0NjQy
+    WhcNMjYxMDE2MDU0NjQyWjCBtjELMAkGA1UEBhMCQ04xETAPBgNVBAgTCFpoZUpp
+    YW5nMREwDwYDVQQHEwhIYW5nWmhvdTEvMC0GA1UEChMmSGFuZ3pob3UgQ2FpQ2xv
+    dWQgVGVjaG5vbG9neSBDby4sIEx0ZC4xFjAUBgNVBAsTDUlUIERlcGFydG1lbnQx
+    FjAUBgNVBAMUDSouY2FpY2xvdWQuaW8xIDAeBgkqhkiG9w0BCQEWEWNlbnBoQGNh
+    aWNsb3VkLmlvMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA0CWG+wXw
+    +SHCaLifQfy3Abovo9T4SJT8WWp9yejRQ407sychYvPd9YQ5Pb94rROVjMtx6JqD
+    rrIBKCnl6VWMP2mAn8SbfuuY/eahlxouGx+nkOJd3TL6LKILSJVAgOC/9ExMzjJ7
+    RAjHgGNIiDvQ74cgLGBXE3SnYkaLxWJ+WdgiPf9htGjOlnZ3ECKkUMTo1FE9Lu6o
+    y3mnTOZSXyWhu8gMS7WpXoudRVDSFszRy3gZGdpq3ScCg7xp0p/aHcnewe4DvfyJ
+    GhuDJxFq0sjk82UVUzIpl3RyERCIOr2Q0rfEzb44p1YeI1T5y72WmrndJz36vOmR
+    C23I4Faabr+GLOsl4DMwn1ngZn5cnzTLiij35v7qvLz7YeYf08zZMDEmLs0inzwP
+    44rZPCE/Nj/MW6q9Vi+0xy5pyvryNkiGyyXj+8YloP570vW6db4vSv8gLpQgm6DF
+    ZtBQ8j+qcjyEyA16enxyHjXTBKVcPDtcttRBUBgU8UHsVgp7j3ybJQGSZM0CtLS6
+    czKjgnH7oQ0N8caBU3u3jvFDTPyxTS11oxGLC87OHg5tirdwhPZ0wUju19IlptgY
+    Avv5gByPOYaDzqENhxUW4Qo5WgMRUEbfQ+Nntl3UwhF0eLIY41e+HLXTBKEPFSAa
+    yMiLKWuwJYLypiiFMjDHZhfW9YM6+Jp5TvkCAwEAAaOCAR8wggEbMB0GA1UdDgQW
+    BBQyngc85frX7jIEwX/DfJDShxrwYjCB6wYDVR0jBIHjMIHggBQyngc85frX7jIE
+    wX/DfJDShxrwYqGBvKSBuTCBtjELMAkGA1UEBhMCQ04xETAPBgNVBAgTCFpoZUpp
+    YW5nMREwDwYDVQQHEwhIYW5nWmhvdTEvMC0GA1UEChMmSGFuZ3pob3UgQ2FpQ2xv
+    dWQgVGVjaG5vbG9neSBDby4sIEx0ZC4xFjAUBgNVBAsTDUlUIERlcGFydG1lbnQx
+    FjAUBgNVBAMUDSouY2FpY2xvdWQuaW8xIDAeBgkqhkiG9w0BCQEWEWNlbnBoQGNh
+    aWNsb3VkLmlvggkA/3sJjGfTx3kwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQUF
+    AAOCAgEAWwCjXV0hRts1gC9Kiq3t2rzwzkwDxQjAtAdXZOLDsh7rcL6T41MxB3fe
+    fsrMeDo9o3GQMDSKB4SohgF+atXLmhMWupLpDoMVUuhQuUixVpM/8Tv81QPhs1Bl
+    MoA2pUXRm8r3S5H6zYUZbXOLcgyvZ2kKjUoIh6V/tpKS/HpLXvYsmpG5aWRGrKB7
+    Oj+pJ9yO8sNG5YTh7UfEGLlTgeB7Iri8+moij7/7P7KdaCT+EWIdJFcgPKwnrSKY
+    4kw/FSxuIepf5Oz2xlpZoQA6yDl4kOJzsIpn0tnVQat0mgOr6Q1xpoqmst5/JxK3
+    yGB8KtGCTaU/sxgUfcnaY5iOV8rA4pqkOxz/Eo06wvLSTkowi9YHKnKvhA4veghV
+    v9zUuvOF0U0sExWc1jv846YViHudodxwnbAl/lE799tWb1J3PMu1GAuoxksePlsS
+    To1Mqufn91aKsgjicvEEkZj0nwtNn6bKb/5thO5xv/5LJ7DJwNmhHdTb47+Fu5tQ
+    NJdyhlqFqcVTL+vOZxdZ0HoG426Hr9STPdDhR43HZr0r/400AmihPcKag6rJXpxX
+    nyAkPdP6QfC+vq1MM6euOo9deHee0GUSimrgDYNAQl92tminn5Md1pXXHWvBVo/s
+    DG6YRwWQmm2dv+cZXqXawUtEH1yGvK+OKdUbGVCRcFFeAfxqsHE=
+    -----END CERTIFICATE-----
+

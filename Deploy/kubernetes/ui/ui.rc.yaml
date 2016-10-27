@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: ui-rc
+  namespace: harbor
+  labels:
+    name: ui-rc
+spec:
+  replicas: 1
+  selector:
+    name: ui-apps
+  template:
+    metadata:
+      namespace: harbor
+      labels:
+        name: ui-apps
+    spec:
+      containers:
+      - name: ui-app
+        image: test.caicloud.io/harbor/ui:0.4.0
+        imagePullPolicy: Always
+        env:
+          - name: MYSQL_HOST
+            value: mysql
+          - name: MYSQL_PORT
+            value: "3306"
+          - name: MYSQL_USR
+            value: root
+          - name: MYSQL_PWD
+            value: root123
+          - name: REGISTRY_URL
+            value: http://registry:5000
+          - name: CONFIG_PATH
+            value: /etc/ui/app.conf
+          - name: HARBOR_REG_URL
+            value: test.caicloud.io
+          - name: HARBOR_ADMIN_PASSWORD
+            value: Harbor12345
+          - name: HARBOR_URL
+            value: http://test.caicloud.io
+          - name: AUTH_MODE
+            value: db_auth
+          - name: LDAP_URL
+            value: ldaps://ldap.mydomain.com
+          - name: LDAP_BASE_DN
+            value: uid=%s,ou=people,dc=mydomain,dc=com
+          - name: LOG_LEVEL
+            value: debug
+          - name: UI_SECRET
+            value: GA4x7dv73QjCsLOd
+          - name: SECRET_KEY
+            value: secretkey1234567
+          - name: GODEBUG
+            value: netdns=cgo
+          - name: EXT_ENDPOINT
+            value: https://test.caicloud.io
+          - name: TOKEN_URL
+            value: http://ui
+          - name: SELF_REGISTRATION
+            value: "on"
+          - name: USE_COMPRESSED_JS
+            value: "on"
+          - name: VERIFY_REMOTE_CERT
+            value: "on"
+          - name: TOKEN_EXPIRATION
+            value: "30"
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: config
+          mountPath: /etc/ui
+      volumes:
+      - name: config
+        configMap:
+          name: harbor-ui-config
+          items:
+          - key: config
+            path: app.conf
+          - key: pkey
+            path: private_key.pem

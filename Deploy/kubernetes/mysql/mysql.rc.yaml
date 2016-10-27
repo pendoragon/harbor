@@ -1,21 +1,23 @@
 apiVersion: v1
 kind: ReplicationController
 metadata:
-  name: mysql
+  name: mysql-rc
+  namespace: harbor
   labels:
-    name: mysql
+    name: mysql-rc
 spec:
   replicas: 1
   selector:
-    name: mysql
+    name: mysql-apps
   template:
     metadata:
+      namespace: harbor
       labels:
-        name: mysql
+        name: mysql-apps
     spec:
       containers:
-      - name: mysql
-        image: caicloud/harbor_deploy_mysql:latest
+      - name: mysql-app
+        image: test.caicloud.io/harbor/mysql:0.4.0
         imagePullPolicy: Always
         ports:
         - containerPort: 3306
@@ -27,4 +29,5 @@ spec:
           mountPath: /var/lib/mysql
       volumes:
       - name: mysql-storage
-        emptyDir: {}
+        hostPath:
+          path: /data/database 

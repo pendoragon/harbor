@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: harbor-jobservice-config
+  namespace: harbor
+data:
+  config: |
+    appname = jobservice
+    runmode = dev
+    [dev]
+    httpport = 80

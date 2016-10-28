@@ -18,7 +18,7 @@ spec:
       containers:
       - name: mysql-app
         image: test.caicloud.io/harbor/mysql:0.4.0
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3306
         env:
@@ -29,5 +29,5 @@ spec:
           mountPath: /var/lib/mysql
       volumes:
       - name: mysql-storage
-        hostPath:
-          path: /data/database 
+        persistentVolumeClaim:
+          claimName: storage-pvc 

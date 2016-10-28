@@ -30,7 +30,15 @@ most of configs have default value and can be changed.
 
 run in k8s:
 ```sh
-# apply config map
+#create pv & pvc
+kubectl create -f ./pv/log.pv.yaml
+kubectl create -f ./pv/registry.pv.yaml
+kubectl create -f ./pv/storage.pv.yaml
+kubectl create -f ./pv/log.pvc.yaml
+kubectl create -f ./pv/registry.pvc.yaml
+kubectl create -f ./pv/storage.pvc.yaml
+
+#apply config map
 kubectl apply -f ./jobservice/jobservice.cm.yaml
 kubectl apply -f ./nginx/nginx.cm.yaml
 kubectl apply -f ./registry/registry.cm.yaml

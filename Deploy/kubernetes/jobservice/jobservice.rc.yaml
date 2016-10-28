@@ -18,7 +18,7 @@ spec:
       containers:
       - name: jobservice-app
         image: test.caicloud.io/harbor/jobservice:0.4.0
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         env:
           - name: MYSQL_HOST
             value: mysql
@@ -65,5 +65,5 @@ spec:
           - key: config
             path: app.conf
       - name: logs
-        hostPath:
-          path: /data/job_logs 
+        persistentVolumeClaim:
+          claimName: log-pvc 

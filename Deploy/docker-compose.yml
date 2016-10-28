@@ -103,6 +103,25 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "proxy"
+
+  cleaner:
+    container_name: cargo_cleaner
+    build:
+      context: ../
+      dockerfile: Deploy/cleaner/Dockerfile
+    restart: always
+    tty: true
+    volumes:
+      - ./cleaner/cleaner.py:/cleaner.py
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 8000:8000
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "cleaner"
+
   postgres:
     container_name: cargo_postgres
     image: postgres:latest

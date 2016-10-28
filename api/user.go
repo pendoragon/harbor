@@ -190,6 +190,8 @@ func (ua *UserAPI) Post() {
 		ua.CustomAbort(http.StatusForbidden, "")
 	}
 
+	ua.userID = ua.ValidateUser()
+
 	if !(ua.SelfRegistration || ua.IsAdmin) {
 		log.Warning("Registration can only be used by admin role user when self-registration is off.")
 		ua.CustomAbort(http.StatusForbidden, "")

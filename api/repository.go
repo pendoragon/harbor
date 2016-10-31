@@ -53,10 +53,9 @@ type repositoryReq struct {
 }
 
 type repositoryRes struct {
-	Total    int                  `json:"total"`
-	Page     int64                `json:"page"`
-	PageSize int64                `json:"page_size"`
-	Repos    []*models.RepoRecord `json:"repos"`
+	Total int                  `json:"total"`
+	Repos []*models.RepoRecord `json:"repos"`
+}
 }
 
 // Get ...
@@ -130,10 +129,8 @@ func (ra *RepositoryAPI) GetRepositoryWithConditions() {
 	log.Debugf("total: %v", total)
 
 	repository_res := repositoryRes{
-		Total:    total,
-		Page:     req.Page,
-		PageSize: req.PageSize,
-		Repos:    repositories,
+		Total: total,
+		Repos: repositories,
 	}
 
 	ra.Data["json"] = repository_res

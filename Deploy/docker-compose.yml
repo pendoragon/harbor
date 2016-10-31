@@ -1,6 +1,7 @@
 version: '2'
 services:
   log:
+    container_name: cargo_log
     build: ./log/
     restart: always
     volumes:
@@ -8,6 +9,7 @@ services:
     ports:
       - 1514:514
   registry:
+    container_name: cargo_registry
     image: library/registry:2.5.0
     restart: always
     volumes:
@@ -25,6 +27,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "registry"
   mysql:
+    container_name: cargo_mysql
     build: ./db/
     restart: always
     volumes:
@@ -42,6 +45,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "mysql"
   ui:
+    container_name: cargo_ui
     build:
       context: ../
       dockerfile: Deploy/ui/Dockerfile
@@ -63,6 +67,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "ui"
   jobservice:
+    container_name: cargo_jobservice
     build:
       context: ../
       dockerfile: Deploy/jobservice/Dockerfile
@@ -80,6 +85,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "jobservice"
   proxy:
+    container_name: cargo_proxy
     image: library/nginx:1.9
     restart: always
     volumes:
@@ -97,6 +103,25 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "proxy"
+
+  cleaner:
+    container_name: cargo_cleaner
+    build:
+      context: ../
+      dockerfile: Deploy/cleaner/Dockerfile
+    restart: always
+    tty: true
+    volumes:
+      - ./cleaner/cleaner.py:/cleaner.py
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 8000:8000
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "cleaner"
+
   postgres:
     container_name: cargo_postgres
     image: postgres:latest

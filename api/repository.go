@@ -53,10 +53,16 @@ type repositoryReq struct {
 }
 
 type repositoryRes struct {
-	Total    int                  `json:"total"`
-	Page     int64                `json:"page"`
-	PageSize int64                `json:"page_size"`
-	Repos    []*models.RepoRecord `json:"repos"`
+	Total int                  `json:"total"`
+	Repos []*models.RepoRecord `json:"repos"`
+}
+
+type getUnmarkedRepositoryReq struct {
+	ProjectID string `json:"project_id"`
+	LabelID   string `json:"label_id"`
+	RepoName  string `json:"repo_name"`
+	Start     int64  `json:"start"`
+	Limit     int64  `json:"limit"`
 }
 
 // Get ...
@@ -116,6 +122,30 @@ func (ra *RepositoryAPI) Get() {
 	ra.ServeJSON()
 }
 
+// GetUnmarkedRepos
+func (ra *RepositoryAPI) GetUnmarkedRepos() {
+	var req getUnmarkedRepositoryReq
+	ra.DecodeJSONReq(&req)
+
+	log.Debugf("GetUnmarkedRepos req: %v", req)
+
+	total, repositories, err := dao.GetUnmarkedRepositoryByProjectIDAndLabelID(req.ProjectID, req.LabelID, req.RepoName, req.Start, req.Limit)
+	if err != nil {
+		log.Errorf("failed to get repository: %v", err)
+		ra.CustomAbort(http.StatusInternalServerError, "failed to get unmarked repository")
+	}
+
+	log.Debugf("total: %v", total)
+
+	repository_res := repositoryRes{
+		Total: total,
+		Repos: repositories,
+	}
+
+	ra.Data["json"] = repository_res
+	ra.ServeJSON()
+}
+
 // GetRepositoryWithConditions ...
 func (ra *RepositoryAPI) GetRepositoryWithConditions() {
 	var req repositoryReq
@@ -130,10 +160,8 @@ func (ra *RepositoryAPI) GetRepositoryWithConditions() {
 	log.Debugf("total: %v", total)
 
 	repository_res := repositoryRes{
-		Total:    total,
-		Page:     req.Page,
-		PageSize: req.PageSize,
-		Repos:    repositories,
+		Total: total,
+		Repos: repositories,
 	}
 
 	ra.Data["json"] = repository_res

@@ -204,6 +204,48 @@ func GetRepositoryWithConditions(project_ids []string, label_ids []string, repo_
 	return total[0], repos, err
 }
 
+// GetUnmarkedRepositoryByProjectIDAndLabelID ...
+func GetUnmarkedRepositoryByProjectIDAndLabelID(project_id string, label_id string, repo_name string, start int64, limit int64) (int, []*models.RepoRecord, error) {
+	if start <= 0 || limit <= 0 {
+		return 0, nil, fmt.Errorf("start and limit should be greater than 0")
+	}
+
+	sql := "SELECT * FROM repository r WHERE r.project_id = ? and r.name NOT IN (SELECT lh.repo_name FROM labelhook lh WHERE lh.label_id = ?)"
+
+	if repo_name != "" {
+		sql += " and r.name like \"%" + repo_name + "%\""
+	}
+
+	// for count without limit
+	sql_count := sql
+
+	sql += " limit ?,?"
+	log.Debugf("sql: %v", sql)
+
+	repos := []*models.RepoRecord{}
+	_, err := GetOrmer().Raw(sql, project_id, label_id, start-1, limit).QueryRows(&repos)
+
+	if err != nil {
+		return 0, nil, err
+	}
+
+	// get total count
+	// ref:
+	// http://stackoverflow.com/questions/186588/which-is-fastest-select-sql-calc-found-rows-from-table-or-select-count
+	sql_count = strings.Replace(sql_count, "*", "COUNT(*)", 1)
+	log.Debugf("sql_count: %v", sql_count)
+	var total []int
+	_, err = GetOrmer().Raw(sql_count, project_id, label_id).QueryRows(&total)
+
+	if err != nil {
+		return 0, nil, err
+	}
+
+	log.Debugf("total: %v", total)
+
+	return total[0], repos, err
+}
+
 //GetTopRepos returns the most popular repositories
 func GetTopRepos(count int) ([]models.TopRepo, error) {
 	topRepos := []models.TopRepo{}

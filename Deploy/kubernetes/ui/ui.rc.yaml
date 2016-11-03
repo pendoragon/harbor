@@ -2,7 +2,6 @@ apiVersion: v1
 kind: ReplicationController
 metadata:
   name: ui-rc
-  namespace: harbor
   labels:
     name: ui-rc
 spec:
@@ -11,7 +10,6 @@ spec:
     name: ui-apps
   template:
     metadata:
-      namespace: harbor
       labels:
         name: ui-apps
     spec:

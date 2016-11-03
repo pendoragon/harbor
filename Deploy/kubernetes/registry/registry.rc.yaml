@@ -2,7 +2,6 @@ apiVersion: v1
 kind: ReplicationController
 metadata:
   name: registry-rc
-  namespace: harbor
   labels:
     name: registry-rc
 spec:
@@ -11,7 +10,6 @@ spec:
     name: registry-apps
   template:
     metadata:
-      namespace: harbor
       labels:
         name: registry-apps
     spec:

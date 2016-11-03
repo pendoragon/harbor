@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: ui-app
-        image: test.caicloud.io/harbor/ui:0.4.0
+        image: harbor/ui
         imagePullPolicy: IfNotPresent
         env:
           - name: MYSQL_HOST

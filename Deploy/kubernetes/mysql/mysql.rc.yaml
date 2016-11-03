@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: mysql-app
-        image: test.caicloud.io/harbor/mysql:0.4.0
+        image: harbor/mysql
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3306

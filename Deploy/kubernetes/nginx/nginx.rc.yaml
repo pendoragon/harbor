@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: nginx-app
-        image: test.caicloud.io/harbor/nginx:0.4.0
+        image: harbor/nginx
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80

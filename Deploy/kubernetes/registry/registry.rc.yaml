@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: registry-app
-        image: test.caicloud.io/harbor/registry:0.4.0
+        image: harbor/registry
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5000

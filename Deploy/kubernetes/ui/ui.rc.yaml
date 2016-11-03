@@ -19,49 +19,115 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
           - name: MYSQL_HOST
-            value: mysql
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: MYSQL_HOST
           - name: MYSQL_PORT
-            value: "3306"
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: MYSQL_PORT
           - name: MYSQL_USR
-            value: root
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: MYSQL_USR
           - name: MYSQL_PWD
-            value: root123
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: MYSQL_PWD
           - name: REGISTRY_URL
-            value: http://registry:5000
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: REGISTRY_URL
           - name: CONFIG_PATH
-            value: /etc/ui/app.conf
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: CONFIG_PATH
           - name: HARBOR_REG_URL
-            value: test.caicloud.io
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: HARBOR_REG_URL
           - name: HARBOR_ADMIN_PASSWORD
-            value: Harbor12345
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: HARBOR_ADMIN_PASSWORD
           - name: HARBOR_URL
-            value: http://test.caicloud.io
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: HARBOR_URL
           - name: AUTH_MODE
-            value: db_auth
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: AUTH_MODE
           - name: LDAP_URL
-            value: ldaps://ldap.mydomain.com
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: LDAP_URL
           - name: LDAP_BASE_DN
-            value: uid=%s,ou=people,dc=mydomain,dc=com
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: LDAP_BASE_DN
           - name: LOG_LEVEL
-            value: debug
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: LOG_LEVEL
           - name: UI_SECRET
-            value: GA4x7dv73QjCsLOd
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: UI_SECRET
           - name: SECRET_KEY
-            value: secretkey1234567
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: SECRET_KEY
           - name: GODEBUG
-            value: netdns=cgo
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: GODEBUG
           - name: EXT_ENDPOINT
-            value: https://test.caicloud.io
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: EXT_ENDPOINT
           - name: TOKEN_URL
-            value: http://ui
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: TOKEN_URL
           - name: SELF_REGISTRATION
-            value: "on"
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: SELF_REGISTRATION
           - name: USE_COMPRESSED_JS
-            value: "on"
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: USE_COMPRESSED_JS
           - name: VERIFY_REMOTE_CERT
-            value: "on"
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: VERIFY_REMOTE_CERT
           - name: TOKEN_EXPIRATION
-            value: "30"
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-ui-config
+               key: TOKEN_EXPIRATION
         ports:
         - containerPort: 80
         volumeMounts:

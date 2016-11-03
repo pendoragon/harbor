@@ -21,7 +21,10 @@ spec:
         - containerPort: 3306
         env:
           - name: MYSQL_ROOT_PASSWORD
-            value: root123
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-mysql-config
+               key: MYSQL_ROOT_PASSWORD
         volumeMounts:
         - name: mysql-storage
           mountPath: /var/lib/mysql

@@ -19,35 +19,80 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
           - name: MYSQL_HOST
-            value: mysql
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: MYSQL_HOST
           - name: MYSQL_PORT
-            value: "3306"
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: MYSQL_PORT
           - name: MYSQL_USR
-            value: root
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: MYSQL_USR
           - name: MYSQL_PWD
-            value: root123
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: MYSQL_PWD
           - name: UI_SECRET
-            value: GA4x7dv73QjCsLOd
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: UI_SECRET
           - name: SECRET_KEY
-            value: secretkey1234567
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: SECRET_KEY
           - name: CONFIG_PATH
-            value: /etc/jobservice/app.conf
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: CONFIG_PATH
           - name: REGISTRY_URL
-            value: http://registry:5000
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: REGISTRY_URL
           - name: VERIFY_REMOTE_CERT
-            value: "on"
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: VERIFY_REMOTE_CERT
           - name: MAX_JOB_WORKERS
-            value: "3"
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: MAX_JOB_WORKERS
           - name: LOG_LEVEL
-            value: debug
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: LOG_LEVEL
           - name: LOG_DIR
-            value: /var/log/jobs
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: LOG_DIR
           - name: GODEBUG
-            value: netdns=cgo
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: GODEBUG
           - name: EXT_ENDPOINT
-            value: https://localhost.caicloud.io
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: EXT_ENDPOINT
           - name: TOKEN_URL
-            value: http://ui
+            valueFrom: 
+              configMapKeyRef: 
+               name: harbor-jobservice-config
+               key: TOKEN_URL
         ports:
         - containerPort: 80
         volumeMounts:

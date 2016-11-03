@@ -15,7 +15,7 @@ data:
       #    accesskeysecret: DETELED
       #    region: oss-cn-hangzhou
       #    internal: false
-      #    bucket: caicloud-registry-canary
+      #    bucket: bucket
       #    rootdirectory: /storage/
       filesystem:
         rootdirectory: /storage
@@ -34,7 +34,7 @@ data:
     auth:
       token:
         issuer: registry-token-issuer
-        realm: https://test.caicloud.io/service/token
+        realm: https://harbor.local/service/token
         rootcertbundle: /etc/docker/registry/root.crt
         service: token-service
     notifications:
@@ -48,43 +48,37 @@ data:
 
   cert: |
     -----BEGIN CERTIFICATE-----
-    MIIHEjCCBPqgAwIBAgIJAP97CYxn08d5MA0GCSqGSIb3DQEBBQUAMIG2MQswCQYD
-    VQQGEwJDTjERMA8GA1UECBMIWmhlSmlhbmcxETAPBgNVBAcTCEhhbmdaaG91MS8w
-    LQYDVQQKEyZIYW5nemhvdSBDYWlDbG91ZCBUZWNobm9sb2d5IENvLiwgTHRkLjEW
-    MBQGA1UECxMNSVQgRGVwYXJ0bWVudDEWMBQGA1UEAxQNKi5jYWljbG91ZC5pbzEg
-    MB4GCSqGSIb3DQEJARYRY2VucGhAY2FpY2xvdWQuaW8wHhcNMTYxMDE4MDU0NjQy
-    WhcNMjYxMDE2MDU0NjQyWjCBtjELMAkGA1UEBhMCQ04xETAPBgNVBAgTCFpoZUpp
-    YW5nMREwDwYDVQQHEwhIYW5nWmhvdTEvMC0GA1UEChMmSGFuZ3pob3UgQ2FpQ2xv
-    dWQgVGVjaG5vbG9neSBDby4sIEx0ZC4xFjAUBgNVBAsTDUlUIERlcGFydG1lbnQx
-    FjAUBgNVBAMUDSouY2FpY2xvdWQuaW8xIDAeBgkqhkiG9w0BCQEWEWNlbnBoQGNh
-    aWNsb3VkLmlvMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA0CWG+wXw
-    +SHCaLifQfy3Abovo9T4SJT8WWp9yejRQ407sychYvPd9YQ5Pb94rROVjMtx6JqD
-    rrIBKCnl6VWMP2mAn8SbfuuY/eahlxouGx+nkOJd3TL6LKILSJVAgOC/9ExMzjJ7
-    RAjHgGNIiDvQ74cgLGBXE3SnYkaLxWJ+WdgiPf9htGjOlnZ3ECKkUMTo1FE9Lu6o
-    y3mnTOZSXyWhu8gMS7WpXoudRVDSFszRy3gZGdpq3ScCg7xp0p/aHcnewe4DvfyJ
-    GhuDJxFq0sjk82UVUzIpl3RyERCIOr2Q0rfEzb44p1YeI1T5y72WmrndJz36vOmR
-    C23I4Faabr+GLOsl4DMwn1ngZn5cnzTLiij35v7qvLz7YeYf08zZMDEmLs0inzwP
-    44rZPCE/Nj/MW6q9Vi+0xy5pyvryNkiGyyXj+8YloP570vW6db4vSv8gLpQgm6DF
-    ZtBQ8j+qcjyEyA16enxyHjXTBKVcPDtcttRBUBgU8UHsVgp7j3ybJQGSZM0CtLS6
-    czKjgnH7oQ0N8caBU3u3jvFDTPyxTS11oxGLC87OHg5tirdwhPZ0wUju19IlptgY
-    Avv5gByPOYaDzqENhxUW4Qo5WgMRUEbfQ+Nntl3UwhF0eLIY41e+HLXTBKEPFSAa
-    yMiLKWuwJYLypiiFMjDHZhfW9YM6+Jp5TvkCAwEAAaOCAR8wggEbMB0GA1UdDgQW
-    BBQyngc85frX7jIEwX/DfJDShxrwYjCB6wYDVR0jBIHjMIHggBQyngc85frX7jIE
-    wX/DfJDShxrwYqGBvKSBuTCBtjELMAkGA1UEBhMCQ04xETAPBgNVBAgTCFpoZUpp
-    YW5nMREwDwYDVQQHEwhIYW5nWmhvdTEvMC0GA1UEChMmSGFuZ3pob3UgQ2FpQ2xv
-    dWQgVGVjaG5vbG9neSBDby4sIEx0ZC4xFjAUBgNVBAsTDUlUIERlcGFydG1lbnQx
-    FjAUBgNVBAMUDSouY2FpY2xvdWQuaW8xIDAeBgkqhkiG9w0BCQEWEWNlbnBoQGNh
-    aWNsb3VkLmlvggkA/3sJjGfTx3kwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQUF
-    AAOCAgEAWwCjXV0hRts1gC9Kiq3t2rzwzkwDxQjAtAdXZOLDsh7rcL6T41MxB3fe
-    fsrMeDo9o3GQMDSKB4SohgF+atXLmhMWupLpDoMVUuhQuUixVpM/8Tv81QPhs1Bl
-    MoA2pUXRm8r3S5H6zYUZbXOLcgyvZ2kKjUoIh6V/tpKS/HpLXvYsmpG5aWRGrKB7
-    Oj+pJ9yO8sNG5YTh7UfEGLlTgeB7Iri8+moij7/7P7KdaCT+EWIdJFcgPKwnrSKY
-    4kw/FSxuIepf5Oz2xlpZoQA6yDl4kOJzsIpn0tnVQat0mgOr6Q1xpoqmst5/JxK3
-    yGB8KtGCTaU/sxgUfcnaY5iOV8rA4pqkOxz/Eo06wvLSTkowi9YHKnKvhA4veghV
-    v9zUuvOF0U0sExWc1jv846YViHudodxwnbAl/lE799tWb1J3PMu1GAuoxksePlsS
-    To1Mqufn91aKsgjicvEEkZj0nwtNn6bKb/5thO5xv/5LJ7DJwNmhHdTb47+Fu5tQ
-    NJdyhlqFqcVTL+vOZxdZ0HoG426Hr9STPdDhR43HZr0r/400AmihPcKag6rJXpxX
-    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
+    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
+    sA==
     -----END CERTIFICATE-----
 

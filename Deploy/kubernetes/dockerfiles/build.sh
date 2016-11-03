@@ -1,104 +1,104 @@
-#! /bin/sh
+#!/bin/bash
 
-#env
-version="0.4.0"
+# first parameter as version
+version="${1:-latest}"
 
-#script path
-currnt_dir="$(pwd)"
-script_dir="$(cd $(dirname ${0});pwd)"
+# script path
+currentDir="$(pwd)"
+scriptDir="$(cd $(dirname $0);pwd)"
 
-#functions
-#EchoError(msg string)
-EchoError() {
-    echo "\033[31m$1\033[0m"
+# functions
+# echoError(msg string)
+echoError() {
+    echo "error: $1"
 }
 
-#EchoInfo(msg string)
-EchoInfo() {
-    echo "\033[33m$1\033[0m"
+# echoInfo(msg string)
+echoInfo() {
+    echo "info: $1"
 }
 
-#Check(tag string) bool
-Check() {
+# check(tag string) bool
+check() {
     docker inspect $1 &>/dev/null
     if [ $? -eq 0 ]
     then
-        EchoInfo "$1 is already exists"
+        echoInfo "$1 is already exists"
         return 1
     fi
     return 0
 }
 
-#BuildImage(dockerfile string)
-BuildImage() {
-    #check
-    Check harbor/$1:${version}
+# buildImage(dockerfile string)
+buildImage() {
+    # check
+    check harbor/$1:$version
     if [ $? -eq 1 ]
     then
         return
     fi
-    EchoInfo "start to build $1"
-    docker build --tag harbor/$1:${version} -f ${script_dir}/$1.dockerfile .
+    echoInfo "start to build $1"
+    docker build --tag harbor/$1:$version -f $scriptDir/$1.dockerfile .
     code=$?
-    if [ ${code} -ne 0 ]
+    if [ $code -ne 0 ]
     then
-        EchoError "docker build failed with exit code:${code}"
+        echoError "docker build failed with exit code:$code"
     else
-        EchoInfo "build $1 succeeded"
+        echoInfo "build $1 succeeded"
     fi
 }
 
-#PullImage(src string,name string)
-PullImage() {
-    #check
-    Check harbor/$2:${version}
+# pullImage(src string,name string)
+pullImage() {
+    # check
+    check harbor/$2:$version
     if [ $? -eq 1 ]
     then
         return
     fi
-    EchoInfo "start to pull $1"
+    echoInfo "start to pull $1"
     docker pull $1
     code=$?
-    if [ ${code} -ne 0 ]
+    if [ $code -ne 0 ]
     then
-        EchoError "docker pull failed with exit code:${code}"
+        echoError "docker pull failed with exit code:$code"
     else
-        docker tag $1  harbor/$2:${version}
-        EchoInfo "pull $1 succeeded"
+        docker tag $1  harbor/$2:$version
+        echoInfo "pull $1 succeeded"
     fi
 }
 
-#check docker
+# check docker
 hash docker &>/dev/null
 result=$?
-if [ ${result} -ne 0 ]
+if [ $result -ne 0 ]
 then
-    EchoError "docker not found"
+    echoError "docker not found"
     exit 1
 fi
 
-#set build context:project root path
-cd ${script_dir}
+# set build context:project root path
+cd $scriptDir
 cd ../../../
 
-#build ui
-BuildImage "ui"
+# build ui
+buildImage "ui"
 
-#build jobservice
-BuildImage "jobservice"
+# build jobservice
+buildImage "jobservice"
 
-#build mysql
-BuildImage "mysql"
+# build mysql
+buildImage "mysql"
 
 
-#end
-cd ${currnt_dir}
+# end
+cd $currentDir
 
 # pull
-if [ "$1" != "nopull" ]
+if [ "$2" != "nopull" ]
 then
-    #pull registry
-    PullImage "library/registry:2.5.0" "registry"
-    #pull nginx
-    PullImage "library/nginx:1.9" "nginx"
+    # pull registry
+    pullImage "library/registry:2.5.0" "registry"
+    # pull nginx
+    pullImage "library/nginx:1.9" "nginx"
 fi

@@ -86,6 +86,19 @@ func UpdateRepository(repo models.RepoRecord) error {
 	return err
 }
 
+// UpdateRepositoryLabelNames ...
+func UpdateRepositoryLabelNames(name string, label_names string) (err error) {
+	o := GetOrmer()
+	num, err := o.QueryTable("repository").Filter("name", name).Update(
+		orm.Params{
+			"label_names": label_names,
+		})
+	if num == 0 {
+		err = fmt.Errorf("Failed to update repository's labelnames with name: %s %s", name, err.Error())
+	}
+	return err
+}
+
 // IncreasePullCount ...
 func IncreasePullCount(name string) (err error) {
 	o := GetOrmer()

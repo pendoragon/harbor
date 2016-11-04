@@ -3,4 +3,4 @@ kind: ConfigMap
 metadata:
   name: harbor-mysql-config
 data:
-  MYSQL_ROOT_PASSWORD: root123
+  MYSQL_ROOT_PASSWORD: "##db_password##"

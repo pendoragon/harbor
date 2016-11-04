@@ -69,15 +69,40 @@ spec:
                name: harbor-ui-config
                key: AUTH_MODE
           - name: LDAP_URL
-            valueFrom: 
-              configMapKeyRef: 
-               name: harbor-ui-config
-               key: LDAP_URL
+            valueFrom:
+              configMapKeyRef:
+                name: harbor-ui-config
+                key: LDAP_URL 
+          - name: LDAP_SEARCH_DN
+            valueFrom:
+              configMapKeyRef:
+                name: harbor-ui-config
+                key: LDAP_SEARCH_DN 
+          - name: LDAP_SEARCH_PWD
+            valueFrom:
+              configMapKeyRef:
+                name: harbor-ui-config
+                key: LDAP_SEARCH_PWD 
           - name: LDAP_BASE_DN
-            valueFrom: 
-              configMapKeyRef: 
-               name: harbor-ui-config
-               key: LDAP_BASE_DN
+            valueFrom:
+              configMapKeyRef:
+                name: harbor-ui-config
+                key: LDAP_BASE_DN 
+          - name: LDAP_FILTER
+            valueFrom:
+              configMapKeyRef:
+                name: harbor-ui-config
+                key: LDAP_FILTER 
+          - name: LDAP_UID
+            valueFrom:
+              configMapKeyRef:
+                name: harbor-ui-config
+                key: LDAP_UID 
+          - name: LDAP_SCOPE
+            valueFrom:
+              configMapKeyRef:
+                name: harbor-ui-config
+                key: LDAP_SCOPE 
           - name: LOG_LEVEL
             valueFrom: 
               configMapKeyRef: 

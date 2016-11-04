@@ -180,6 +180,7 @@ create table repository (
  star_count int DEFAULT 0 NOT NULL,
  tag_count int DEFAULT 0 NOT NULL,
  latest_tag varchar (64),
+ ltag_ctime varchar (128),
  author varchar (512),
  label_names varchar (2048),
  creation_time timestamp default CURRENT_TIMESTAMP,

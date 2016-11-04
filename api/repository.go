@@ -16,6 +16,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -285,6 +286,9 @@ func (ra *RepositoryAPI) Delete() {
 			log.Errorf("failed to delete repository %s: %v", repoName, err)
 			ra.CustomAbort(http.StatusInternalServerError, "")
 		}
+	} else {
+		// Trigger sync repo latest manifest if delete a tag
+		go TriggerSyncRepositoryLatestManifest(repoName)
 	}
 
 	go func() {
@@ -293,6 +297,7 @@ func (ra *RepositoryAPI) Delete() {
 			log.Errorf("error occurred while refresh catalog cache: %v", err)
 		}
 	}()
+
 }
 
 type tag struct {
@@ -559,4 +564,106 @@ func newRepositoryClient(endpoint string, insecure bool, username, password, rep
 		return nil, err
 	}
 	return client, nil
+}
+
+// TriggerSyncRepositoryLatestManifest
+func TriggerSyncRepositoryLatestManifest(repo_name string) error {
+	log.Debugf("TriggerSyncRepositoryLatestManifest, repo_name: %v", repo_name)
+
+	endpoint := os.Getenv("REGISTRY_URL")
+
+	// get tags and latest manifest
+	rc, err := newRepositoryClient(endpoint, getIsInsecure(), "admin", "Harbor12345",
+		repo_name, "repository", repo_name, "pull", "push", "*")
+
+	if err != nil {
+		log.Errorf("error occurred while initializing repository client for %s: %v", repo_name, err)
+		return nil
+	}
+
+	tags := []string{}
+
+	ts, err := rc.ListTag()
+	if err != nil {
+		regErr, ok := err.(*registry_error.Error)
+		if !ok {
+			log.Errorf("error occurred while listing tags of %s: %v", repo_name, err)
+			return nil
+		}
+		// TODO remove the logic if the bug of registry is fixed
+		// It's a workaround for a bug of registry: when listing tags of
+		// a repository which is being pushed, a "NAME_UNKNOWN" error will
+		// been returned, while the catalog API can list this repository.
+		if regErr.StatusCode != http.StatusNotFound {
+			log.Errorf("regErr.StatusCode != http.StatusNotFound")
+			return nil
+		}
+	}
+
+	tags = append(tags, ts...)
+	log.Debugf("get tags: %v", tags)
+
+	sort.Strings(tags)
+	log.Debugf("get tags after sort: %v", tags)
+
+	// get manifest of latest tag
+	mediaTypes := []string{}
+	mediaTypes = append(mediaTypes, schema1.MediaTypeManifest)
+
+	latest_tag := tags[len(tags)-1]
+
+	_, mediaType, payload, err := rc.PullManifest(latest_tag, mediaTypes)
+	log.Debugf("mediaType: %v", mediaType)
+	if err != nil {
+		if regErr, ok := err.(*registry_error.Error); ok {
+			log.Errorf("registry_error: %v", regErr)
+			return nil
+		}
+
+		log.Errorf("error occurred while getting manifest of %s:%s: %v", repo_name, latest_tag, err)
+		return nil
+	}
+
+	signed_manifest_v1 := new(schema1.SignedManifest)
+	err = signed_manifest_v1.UnmarshalJSON(payload)
+	if err != nil {
+		log.Errorf("UnmarshalJSON to get signed_manifest_v1 error, repo_name: %s, tag: %s", repo_name, latest_tag)
+		return nil
+	}
+
+	if len(signed_manifest_v1.History) <= 0 {
+		log.Errorf("signed_manifest_v1 has no history, repo_name: %s, tag: %s", repo_name, latest_tag)
+		return nil
+	}
+
+	// convert string to json
+	type V1Compatibility struct {
+		Architecture    string      `json:"architecture"`
+		Config          interface{} `json:"config"`
+		Container       string      `json:"container"`
+		ContainerConfig interface{} `json:"container_config"`
+		Created         string      `json:"created"`
+		DockerVersion   string      `json:"docker_version"`
+		ID              string      `json:"id"`
+		OS              string      `json:"os"`
+		Parent          string      `json:"parent"`
+		Throwaway       bool        `json:"throwaway"`
+	}
+
+	var v1_compatibility V1Compatibility
+
+	history0_v1_compatibility_str := signed_manifest_v1.History[0].V1Compatibility
+	err = json.Unmarshal([]byte(history0_v1_compatibility_str), &v1_compatibility)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+
+	log.Debugf("v1_compatibility.Created: %v", v1_compatibility.Created)
+
+	if err := dao.UpdateRepositoryLatestManifest(repo_name, latest_tag, v1_compatibility.Created, len(tags), "N/A"); err != nil {
+		log.Errorf("Error occurred in UpdateRepositoryLatestManifest: %v", err)
+		return err
+	}
+
+	return nil
 }

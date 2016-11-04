@@ -97,6 +97,9 @@ func (n *NotificationHandler) Post() {
 				operation = models.RepOpTransfer
 			}
 
+			// Trigger sync repo latest manifest
+			go api.TriggerSyncRepositoryLatestManifest(repository)
+
 			go api.TriggerReplicationByRepository(repository, []string{tag}, operation)
 		}
 		if action == "pull" {

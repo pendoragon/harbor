@@ -2,8 +2,8 @@
 # Integration with Kubernetes
 
 Firstly you need to get docker images of harbor.You can get it by the two ways:
-- Download Harbor's images from Docker hub. see [Installation guide](https://github.com/vmware/harbor/blob/master/docs/installation_guide.md)
-- Build images by **dockerfiles/build.sh**
+- Download Harbor's images from Docker hub. See [Installation Guide](https://github.com/vmware/harbor/blob/master/docs/installation_guide.md)
+- Build images by **dockerfiles/build.sh**(For testing quickly,**DON'T** use it in production)
 
 Use **dockerfiles/build.sh** to build images:  
 ```
@@ -16,14 +16,14 @@ bash ./dockerfiles/build.sh [version]
 - nopull($2):nopull prevents script from pulling nginx and registry.Default value is 'false'
 
 
-These images will be built or pulled(tags are decided by version):
+These images will be built or pulled(Tags are decided by version):
 - harbor/ui:version  
 - harbor/jobservice:version  
 - harbor/mysql:version  
 - harbor/registry:version  
 - harbor/nginx:version  
 
-You can put these images into all kubernetes minions or a docker registry which your cluster can find it.    
+You can put these images into all kubernetes minions or a docker registry where your cluster can pull them.    
 
 Building dependencies:   
 - Deploy/jsminify.sh  

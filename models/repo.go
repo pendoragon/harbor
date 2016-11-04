@@ -32,6 +32,7 @@ type RepoRecord struct {
 	StarCount    int64     `orm:"column(star_count)" json:"star_count"`
 	TagCount     int64     `orm:"column(tag_count)" json:"tag_count"`
 	LatestTag    string    `orm:"column(latest_tag)" json:"latest_tag"`
+	LTagCTime    string    `orm:"column(ltag_ctime)" json:"ltag_ctime"`
 	Author       string    `orm:"column(author)" json:"author"`
 	LabelNames   string    `orm:"column(label_names)" json:"label_names"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`

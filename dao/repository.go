@@ -93,8 +93,27 @@ func UpdateRepositoryLabelNames(name string, label_names string) (err error) {
 		orm.Params{
 			"label_names": label_names,
 		})
-	if num == 0 {
+	if num == 0 && err != nil {
 		err = fmt.Errorf("Failed to update repository's labelnames with name: %s %s", name, err.Error())
+	}
+	return err
+}
+
+// UpdateRepositoryLatestManifest ...
+func UpdateRepositoryLatestManifest(name string, latest_tag string, latest_tag_create_time string, tag_count int, author string) (err error) {
+	log.Debugf("UpdateRepositoryLatestManifest, name: %v, latest_tag: %v, latest_tag_create_time: %v, tag_count: %v, author: %v", name, latest_tag, latest_tag_create_time, tag_count, author)
+	o := GetOrmer()
+	num, err := o.QueryTable("repository").Filter("name", name).Update(
+		orm.Params{
+			"latest_tag": latest_tag,
+			"ltag_ctime": latest_tag_create_time,
+			"tag_count":  tag_count,
+			"author":     author,
+		})
+	log.Debugf("num: %v", num)
+	if num == 0 && err != nil {
+		log.Errorf("err: %v", err)
+		err = fmt.Errorf("Failed to update repository's latest manifest with name: %s", name)
 	}
 	return err
 }

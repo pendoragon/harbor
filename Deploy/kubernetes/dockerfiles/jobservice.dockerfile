@@ -1,14 +1,12 @@
-FROM golang:1.6.2
+FROM debian:jessie
 
 RUN apt-get update \
     && apt-get install -y libldap2-dev \
     && rm -r /var/lib/apt/lists/*
 
-COPY . /go/src/github.com/vmware/harbor
+COPY Deploy/kubernetes/dockerfiles/bin/harbor_jobservice /go/bin/harbor_jobservice
 
-WORKDIR /go/src/github.com/vmware/harbor/jobservice
+RUN chmod u+x /go/bin/harbor_jobservice 
 
-RUN go build -v -a -o /go/bin/harbor_jobservice \
-    && chmod u+x /go/bin/harbor_jobservice 
 WORKDIR /go/bin/
 ENTRYPOINT ["/go/bin/harbor_jobservice"]

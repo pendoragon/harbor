@@ -9,8 +9,11 @@ import re
 import string
 import subprocess
 
+# prepare base dir
+base_dir = os.path.dirname(__file__)
+
 parser = argparse.ArgumentParser(description='Generate *.cm.yaml')
-parser.add_argument('-f', default='../harbor.cfg',
+parser.add_argument('-f', default=os.path.join(base_dir, '../harbor.cfg'),
                     dest='config_file', help='harbor config file')
 parser.add_argument('-k', default='',
                     dest='private_key', help='harbor https private key(pem)')
@@ -125,10 +128,11 @@ def generate_template(tmpl: str, dest: str):
         with io.open(dest, 'w') as dest:
             dest.write(render_template(tmpl.read()))
 
-template_dir = './templates/'
-output_dir = './'
-generate_template(template_dir + 'ui.cm.yaml', output_dir + 'ui/ui.cm.yaml')
-generate_template(template_dir + 'jobservice.cm.yaml', output_dir + 'jobservice/jobservice.cm.yaml')
-generate_template(template_dir + 'mysql.cm.yaml', output_dir + 'mysql/mysql.cm.yaml')
-generate_template(template_dir + 'nginx.cm.yaml', output_dir + 'nginx/nginx.cm.yaml')
-generate_template(template_dir + 'registry.cm.yaml', output_dir + 'registry/registry.cm.yaml')
+
+template_dir = os.path.join(base_dir, 'templates')
+output_dir = base_dir
+generate_template(os.path.join(template_dir, 'ui.cm.yaml'), os.path.join(output_dir, 'ui/ui.cm.yaml'))
+generate_template(os.path.join(template_dir, 'jobservice.cm.yaml'), os.path.join(output_dir, 'jobservice/jobservice.cm.yaml'))
+generate_template(os.path.join(template_dir, 'mysql.cm.yaml'), os.path.join(output_dir, 'mysql/mysql.cm.yaml'))
+generate_template(os.path.join(template_dir, 'nginx.cm.yaml'), os.path.join(output_dir, 'nginx/nginx.cm.yaml'))
+generate_template(os.path.join(template_dir, 'registry.cm.yaml'), os.path.join(output_dir, 'registry/registry.cm.yaml'))

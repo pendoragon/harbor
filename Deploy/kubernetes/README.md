@@ -3,7 +3,7 @@
 
 Firstly you need to get docker images of harbor.You can get it by the two ways:
 - Download Harbor's images from Docker hub. See [Installation Guide](https://github.com/vmware/harbor/blob/master/docs/installation_guide.md)
-- Build images by **dockerfiles/build.sh**(For testing quickly,**DON'T** use it in production)
+- Build images by **dockerfiles/build.sh**(For testing quickly,**DO NOT** use it in production)
 
 Use **dockerfiles/build.sh** to build images:  
 ```
@@ -31,7 +31,17 @@ Building dependencies:
 - Deploy/db/docker-entrypoint.sh  
 
 
-Before you starting harbor in kubernetes,you need to set some configs:
+Before you starting harbor in kubernetes,you need to create some configs with these steps:  
+1. Set configs in harbor.cfg  
+2. Prepare your https pkey and cert  
+3. Make sure there is a version of openssl in your environment 
+4. Execute ./prepare:
+```
+# generates *.cm.yaml automatically 
+python3 ./prepare -k path-to-https-pkey -c path-to-https-cert
+```
+
+./prepare generates *.cm.yaml from templates. There are some key configs in *.cm.yaml:
 - mysql/mysql.cm.yaml:
   - password of root
 - registry/registry.cm.yaml:
@@ -56,7 +66,7 @@ Before you starting harbor in kubernetes,you need to set some configs:
   - private key of https
   - cert of https
 - pv/*.pv.yaml
-  - use other storage ways instead of hostPath
+  - use other storage ways instead of hostPath(**!!!IMPORTENT**)
 
 Then you can start harbor in kubernetes with these commands:
 ```

@@ -34,8 +34,8 @@ Building dependencies:
 Before you starting harbor in kubernetes,you need to create some configs with these steps:  
 1. Set configs in harbor.cfg  
 2. Prepare your https pkey and cert  
-3. Make sure there is a version of openssl in your environment 
-4. Execute ./prepare:
+3. Make sure there is a version of openssl in your environment  
+4. Execute ./prepare:  
 ```
 # generates *.cm.yaml automatically 
 python3 ./prepare -k path-to-https-pkey -c path-to-https-cert

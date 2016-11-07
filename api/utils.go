@@ -312,10 +312,10 @@ func SyncRegistry() error {
 
 	for _, repoRecordInDB := range repoRecordsInDB {
 		// Trigger sync repo latest manifest
-		go TriggerSyncRepositoryLatestManifest(repoRecordInDB.Name)
+		TriggerSyncRepositoryLatestManifest(repoRecordInDB.Name)
 
 		// Sync label names cached in repositry table
-		go dao.SyncRepositoryLabelNames(repoRecordInDB.Name)
+		dao.SyncRepositoryLabelNames(repoRecordInDB.Name)
 	}
 
 	log.Debugf("Sync repositories from registry to DB is done.")

@@ -303,6 +303,21 @@ func SyncRegistry() error {
 		}
 	}
 
+	// do repo details sync
+	repoRecordsInDB, err = dao.GetAllRepositories()
+	if err != nil {
+		log.Errorf("error occurred while getting all registories. %v", err)
+		return err
+	}
+
+	for _, repoRecordInDB := range repoRecordsInDB {
+		// Trigger sync repo latest manifest
+		go TriggerSyncRepositoryLatestManifest(repoRecordInDB.Name)
+
+		// Sync label names cached in repositry table
+		go dao.SyncRepositoryLabelNames(repoRecordInDB.Name)
+	}
+
 	log.Debugf("Sync repositories from registry to DB is done.")
 	return nil
 }

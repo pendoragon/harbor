@@ -67,25 +67,7 @@ func NewLabelHook(labelhook models.LabelHook) (int64, error) {
 	}
 
 	// update label names cached in repositry table
-	log.Debugf("update label names cached in repositry table, repo_name: %v", labelhook.RepoName)
-
-	var label_names []string
-
-	sql := "select label_name from labelhook where repo_name = ?"
-
-	if _, err := o.Raw(sql, labelhook.RepoName).QueryRows(&label_names); err != nil {
-		log.Errorf("Failed to get label names by repo_name, error: %v", err)
-		return 0, err
-	}
-
-	label_names_str := strings.Join(label_names, ",")
-	log.Debugf("label_names_str: %v", label_names_str)
-
-	err = UpdateRepositoryLabelNames(labelhook.RepoName, label_names_str)
-	if err != nil {
-		log.Errorf("Error occurred in UpdateRepositoryLabelNames: %v", err)
-		return 0, err
-	}
+	err = SyncRepositoryLabelNames(labelhook.RepoName)
 
 	return labelHookID, err
 }
@@ -157,26 +139,7 @@ func DeleteLabel(labelID int64) error {
 	}
 
 	// update label names cached in repositry table
-	log.Debugf("update label names cached in repositry table, repo_name: %v", repo_names[0])
-
-	var label_names []string
-
-	sql = "select label_name from labelhook where repo_name = ?"
-
-	if _, err := o.Raw(sql, repo_names[0]).QueryRows(&label_names); err != nil {
-		log.Errorf("Failed to get label names by repo_name, error: %v", err)
-		return err
-	}
-
-	label_names_str := strings.Join(label_names, ",")
-	log.Debugf("label_names_str: %v", label_names_str)
-
-	if err := UpdateRepositoryLabelNames(repo_names[0], label_names_str); err != nil {
-		log.Errorf("Error occurred in UpdateRepositoryLabelNames: %v", err)
-		return err
-	}
-
-	return nil
+	return SyncRepositoryLabelNames(repo_names[0])
 }
 
 // Delete remove a labelhook from the database.
@@ -202,13 +165,17 @@ func DeleteLabelHook(labelHookID int64) error {
 	}
 
 	// update label names cached in repositry table
-	log.Debugf("update label names cached in repositry table, repo_name: %v", repo_names[0])
+	return SyncRepositoryLabelNames(repo_names[0])
+}
 
+func SyncRepositoryLabelNames(repo_name string) error {
+	log.Debugf("SyncRepositoryLabelNames, repo_name: %v", repo_name)
+	o := GetOrmer()
 	var label_names []string
 
-	sql = "select label_name from labelhook where repo_name = ?"
+	sql := "select label_name from labelhook where repo_name = ?"
 
-	if _, err := o.Raw(sql, repo_names[0]).QueryRows(&label_names); err != nil {
+	if _, err := o.Raw(sql, repo_name).QueryRows(&label_names); err != nil {
 		log.Errorf("Failed to get label names by repo_name, error: %v", err)
 		return err
 	}
@@ -216,7 +183,7 @@ func DeleteLabelHook(labelHookID int64) error {
 	label_names_str := strings.Join(label_names, ",")
 	log.Debugf("label_names_str: %v", label_names_str)
 
-	if err := UpdateRepositoryLabelNames(repo_names[0], label_names_str); err != nil {
+	if err := UpdateRepositoryLabelNames(repo_name, label_names_str); err != nil {
 		log.Errorf("Error occurred in UpdateRepositoryLabelNames: %v", err)
 		return err
 	}

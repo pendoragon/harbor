@@ -314,8 +314,9 @@ func SyncRegistry() error {
 		// Trigger sync repo latest manifest
 		TriggerSyncRepositoryLatestManifest(repoRecordInDB.Name)
 
-		// Sync label names cached in repositry table
+		// Sync label names and manager cached in repositry table
 		dao.SyncRepositoryLabelNames(repoRecordInDB.Name)
+		dao.SyncRepositoryManager(repoRecordInDB.Name)
 	}
 
 	log.Debugf("Sync repositories from registry to DB is done.")

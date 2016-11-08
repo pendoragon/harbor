@@ -99,6 +99,19 @@ func UpdateRepositoryLabelNames(name string, label_names string) (err error) {
 	return err
 }
 
+// UpdateRepositoryManager ...
+func UpdateRepositoryManager(name string, manager string) (err error) {
+	o := GetOrmer()
+	num, err := o.QueryTable("repository").Filter("name", name).Update(
+		orm.Params{
+			"manager": manager,
+		})
+	if num == 0 && err != nil {
+		err = fmt.Errorf("Failed to update repository's manager with name: %s %s", name, err.Error())
+	}
+	return err
+}
+
 // UpdateRepositoryLatestManifest ...
 func UpdateRepositoryLatestManifest(name string, latest_tag string, latest_tag_create_time string, tag_count int, author string) (err error) {
 	log.Debugf("UpdateRepositoryLatestManifest, name: %v, latest_tag: %v, latest_tag_create_time: %v, tag_count: %v, author: %v", name, latest_tag, latest_tag_create_time, tag_count, author)
@@ -276,6 +289,36 @@ func GetUnmarkedRepositoryByProjectIDAndLabelID(project_id string, label_id stri
 	log.Debugf("total: %v", total)
 
 	return total[0], repos, err
+}
+
+func SyncRepositoryManager(repo_name string) error {
+	log.Debugf("SyncRepositoryManager, repo_name: %v", repo_name)
+	o := GetOrmer()
+	repository := strings.TrimSpace(repo_name)
+	repository = strings.TrimRight(repository, "/")
+	project_name := repository[:strings.LastIndex(repository, "/")]
+	log.Debugf("SyncRepositoryManager, project_name: %v", project_name)
+
+	var managers []string
+
+	sql := "select manager from project where name = ?"
+
+	if _, err := o.Raw(sql, project_name).QueryRows(&managers); err != nil {
+		log.Errorf("Failed to get managers by project_name: %s, error: %v", project_name, err)
+		return err
+	}
+
+	log.Debugf("SyncRepositoryManager, managers: %v", managers)
+	if len(managers) <= 0 {
+		log.Errorf("Error occurred, managers length <= 0")
+		return nil
+	}
+	if err := UpdateRepositoryManager(repo_name, managers[0]); err != nil {
+		log.Errorf("Error occurred in UpdateRepositoryManager: %v", err)
+		return err
+	}
+
+	return nil
 }
 
 //GetTopRepos returns the most popular repositories

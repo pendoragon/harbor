@@ -111,7 +111,7 @@ func TriggerRepositoryAnalysis(repo string, tag string, username string, passwor
 
 	if len(username) == 0 || len(password) == 0 {
 		username = "admin"
-		password = "Harbor12345"
+		password = os.Getenv("HARBOR_ADMIN_PASSWORD")
 	}
 
 	imageName := os.Getenv("HARBOR_REG_URL") + "/" + repo + ":" + tag

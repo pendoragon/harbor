@@ -573,7 +573,7 @@ func TriggerSyncRepositoryLatestManifest(repo_name string) error {
 	endpoint := os.Getenv("REGISTRY_URL")
 
 	// get tags and latest manifest
-	rc, err := newRepositoryClient(endpoint, getIsInsecure(), "admin", "Harbor12345",
+	rc, err := newRepositoryClient(endpoint, getIsInsecure(), "admin", os.Getenv("HARBOR_ADMIN_PASSWORD"),
 		repo_name, "repository", repo_name, "pull", "push", "*")
 
 	if err != nil {

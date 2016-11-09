@@ -124,22 +124,29 @@ func (p *ProjectAPI) Post() {
 
 // Put ...
 func (p *ProjectAPI) Put() {
-	idStr := p.Ctx.Input.Param(":id")
-	id, err := strconv.Atoi(idStr)
+	p.userID = p.ValidateUser()
+
+	projectID, err := strconv.ParseInt(p.Ctx.Input.Param(":id"), 10, 64)
 	if err != nil {
-		log.Errorf("Error parsing project id: %s, error: %v", idStr, err)
-		p.CustomAbort(http.StatusBadRequest, "invalid project id")
+		log.Errorf("Error parsing project id: %d, error: %v", projectID, err)
+		p.RenderError(http.StatusBadRequest, "invalid project id")
+		return
 	}
 
 	var req projectReq
 	p.DecodeJSONReq(&req)
-	public := req.Public
+
+	if !isProjectAdmin(p.userID, projectID) {
+		log.Warningf("Current user, id: %d does not have project admin role for project, id: %d", p.userID, projectID)
+		p.RenderError(http.StatusForbidden, "")
+		return
+	}
 
 	updateProject := models.Project{
-		ProjectID: int64(id),
+		ProjectID: projectID,
 		Manager:   req.Manager,
 		Remark:    req.Remark,
-		Public:    public,
+		Public:    req.Public,
 	}
 
 	err = dao.UpdateProject(updateProject)

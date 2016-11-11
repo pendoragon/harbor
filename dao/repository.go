@@ -163,7 +163,7 @@ func GetRepositoryByProjectName(name string) ([]*models.RepoRecord, error) {
 }
 
 // GetRepositoryWithConditions ...
-func GetRepositoryWithConditions(project_ids []string, label_ids []string, repo_name string, page int64, page_size int64) (int, []*models.RepoRecord, error) {
+func GetRepositoryWithConditions(userid int, project_ids []string, label_ids []string, repo_name string, page int64, page_size int64) (int, []*models.RepoRecord, error) {
 	if page <= 0 || page_size <= 0 {
 		return 0, nil, fmt.Errorf("page and page_size should be greater than 0")
 	}
@@ -191,17 +191,20 @@ func GetRepositoryWithConditions(project_ids []string, label_ids []string, repo_
 		log.Debugf("pick_repo_names: %v", pick_repo_names)
 	}
 
-	sql := "select * from repository"
+	sql := "select r.* " +
+		"from repository r " +
+		"inner join project p " +
+		"on p.project_id = r.project_id and (p.public = 1 or p.owner_id = ?)"
 
 	if len(project_ids) > 0 {
 		project_ids_str := strings.Join(project_ids, ",")
-		sql += " where project_id in (" + project_ids_str + ")"
+		sql += " where r.project_id in (" + project_ids_str + ")"
 	}
 
 	if len(project_ids) > 0 && repo_name != "" {
-		sql += " and name like \"%" + repo_name + "%\""
+		sql += " and r.name like \"%" + repo_name + "%\""
 	} else if repo_name != "" {
-		sql += " where name like \"%" + repo_name + "%\""
+		sql += " where r.name like \"%" + repo_name + "%\""
 	}
 
 	if len(pick_repo_names) > 0 {
@@ -211,9 +214,9 @@ func GetRepositoryWithConditions(project_ids []string, label_ids []string, repo_
 
 		pick_repo_names_str := strings.Join(pick_repo_names, ",")
 		if strings.Contains(sql, "where") {
-			sql += " and name in (" + pick_repo_names_str + ")"
+			sql += " and r.name in (" + pick_repo_names_str + ")"
 		} else {
-			sql += " where name in (" + pick_repo_names_str + ")"
+			sql += " where r.name in (" + pick_repo_names_str + ")"
 		}
 	}
 
@@ -226,7 +229,7 @@ func GetRepositoryWithConditions(project_ids []string, label_ids []string, repo_
 	log.Debugf("sql: %v", sql)
 
 	repos := []*models.RepoRecord{}
-	_, err := GetOrmer().Raw(sql, offset, page_size).QueryRows(&repos)
+	_, err := GetOrmer().Raw(sql, userid, offset, page_size).QueryRows(&repos)
 
 	if err != nil {
 		return 0, nil, err
@@ -235,10 +238,10 @@ func GetRepositoryWithConditions(project_ids []string, label_ids []string, repo_
 	// get total count
 	// ref:
 	// http://stackoverflow.com/questions/186588/which-is-fastest-select-sql-calc-found-rows-from-table-or-select-count
-	sql_count = strings.Replace(sql_count, "*", "COUNT(*)", 1)
+	sql_count = strings.Replace(sql_count, "r.*", "COUNT(*)", 1)
 	log.Debugf("sql_count: %v", sql_count)
 	var total []int
-	_, err = GetOrmer().Raw(sql_count).QueryRows(&total)
+	_, err = GetOrmer().Raw(sql_count, userid).QueryRows(&total)
 
 	if err != nil {
 		return 0, nil, err

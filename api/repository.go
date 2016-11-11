@@ -43,6 +43,7 @@ import (
 // in the query string as the web framework can not parse the URL if it contains veriadic sectors.
 type RepositoryAPI struct {
 	BaseAPI
+	userID int
 }
 
 type repositoryReq struct {
@@ -149,10 +150,12 @@ func (ra *RepositoryAPI) GetUnmarkedRepos() {
 
 // GetRepositoryWithConditions ...
 func (ra *RepositoryAPI) GetRepositoryWithConditions() {
+	ra.userID = ra.ValidateUser()
+
 	var req repositoryReq
 	ra.DecodeJSONReq(&req)
 
-	total, repositories, err := dao.GetRepositoryWithConditions(req.ProjectIDs, req.LabelIDs, req.RepoName, req.Page, req.PageSize)
+	total, repositories, err := dao.GetRepositoryWithConditions(ra.userID, req.ProjectIDs, req.LabelIDs, req.RepoName, req.Page, req.PageSize)
 	if err != nil {
 		log.Errorf("failed to get repository: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "failed to get repository with conditions")

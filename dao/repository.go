@@ -225,6 +225,7 @@ func GetRepositoryWithConditions(userid int, project_ids []string, label_ids []s
 
 	offset := (page - 1) * page_size
 
+	sql += " order by r.project_id asc"
 	sql += " limit ?,?"
 	log.Debugf("sql: %v", sql)
 

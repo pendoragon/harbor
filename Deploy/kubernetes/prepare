@@ -97,7 +97,7 @@ else:
     
 
 
-variable = re.compile(r'##.+?##')
+variable = re.compile(r'{{.+?}}')
 detail = re.compile(r'((\d+) )?([a-zA-Z_0-9-]+)')
 def render_template(tmpl: str) -> str:
     """render template

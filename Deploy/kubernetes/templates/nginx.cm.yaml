@@ -30,7 +30,7 @@ data:
 
     server {
         listen 443 ssl;
-        server_name ##hostname##;
+        server_name {{hostname}};
 
         # SSL
         ssl_certificate /etc/nginx/https.crt;
@@ -94,11 +94,11 @@ data:
     }
         server {
         listen 80;
-        server_name ##hostname##;
+        server_name {{hostname}};
         rewrite ^/(.*) https://$server_name:443/$1 permanent;
     }
     }
   pkey: |
-    ##4 https_pkey##
+    {{4 https_pkey}}
   cert: |
-    ##4 https_cert##
+    {{4 https_cert}}

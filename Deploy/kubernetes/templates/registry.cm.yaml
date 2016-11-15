@@ -34,7 +34,7 @@ data:
     auth:
       token:
         issuer: registry-token-issuer
-        realm: ##ui_url##/service/token
+        realm: {{ui_url}}/service/token
         rootcertbundle: /etc/docker/registry/root.crt
         service: token-service
     notifications:
@@ -47,5 +47,5 @@ data:
           backoff: 1s
 
   cert: |
-    ##4 auth_cert##
+    {{4 auth_cert}}
 

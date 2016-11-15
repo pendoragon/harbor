@@ -10,13 +10,6 @@ data:
       fields:
         service: registry
     storage:
-      #oss:
-      #    accesskeyid: DELETED
-      #    accesskeysecret: DETELED
-      #    region: oss-cn-hangzhou
-      #    internal: false
-      #    bucket: bucket
-      #    rootdirectory: /storage/
       filesystem:
         rootdirectory: /storage
       cache:

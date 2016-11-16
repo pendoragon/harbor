@@ -23,32 +23,40 @@ These Basic Configuration must be set. Otherwise you can't deploy Harbor on Kube
 - `harbor.cfg` : Basic config of Harbor. Please refer to `harbor.cfg` .
 - `*.pvc.yaml` : Persistent Volume Claim.  
   You can set capacity of storage in these files. example:
+  
   ```
   resources:
     requests:
       # you can set another value to adapt to your needs
       storage: 100Gi
   ```
+  
 - `*.pv.yaml` : Persistent Volume. Be bound with `*.pvc.yaml` .  
   PVs and PVCs are one to one correspondence. If you changed capacity of PVC, you need to set capacity of PV together.
   example:
+  
   ```
   capacity:
     # same value with PVC
     storage: 100Gi
   ```
+  
   In PV, you should set another way to store data rather than `hostPath`:
+  
   ```
   # it's default value, you should use others like nfs.
   hostPath:
     path: /data/registry
   ```
+  
   For more infomation about store ways, Please check [Kubernetes Document](http://kubernetes.io/docs/user-guide/persistent-volumes/) 
 
 Then you can generate ConfigMap files by :
+
 ```
 python3 ./prepare -f ../harbor.cfg -k path-to-https-pkey -c path-to-https-cert
 ```
+
 These files will be generated:
 - ./jobservice/jobservice.cm.yaml
 - ./mysql/mysql.cm.yaml
@@ -70,11 +78,13 @@ You can find all configs of Harbor in `./templates/`.There are specifications of
   If you are fimiliar with nginx, you can modify it. 
 - `registry.cm.yaml` : Token service certification and registry config
   Registry use filesystem to store data of images. You can find it like:
+  
   ```
   storage:
       filesystem:
         rootdirectory: /storage
   ``` 
+  
   If you want use another storage backend, please see [Docker Doc](https://docs.docker.com/datacenter/dtr/2.1/guides/configure/configure-storage/)
 - `ui.cm.yaml` : Token service private key, ENV and web config of ui 
 

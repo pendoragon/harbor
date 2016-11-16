@@ -21,7 +21,7 @@ There are some args of the script:
 #### Basic Configuration
 These Basic Configuration must be set. Otherwise you can't deploy Harbor on Kubernetes.
 - `harbor.cfg` : Basic config of Harbor. Please refer to `harbor.cfg` .
-- `make/kubernetes/**/*.rc.yaml` : Specify configs of containers.  
+- `*.rc.yaml` : Specify configs of containers.  
   You need to specify the path to your images in all `*.rc.yaml` . example:
 
   ```

@@ -113,10 +113,13 @@ services:
   cleaner:
     container_name: cargo_cleaner
     image: cargo.caicloud.io/cargo/cargo_cleaner:latest
+    # build:
+    #   context: ../
+    #   dockerfile: make/dev/cleaner/Dockerfile
     restart: always
     tty: true
     volumes:
-      - ./cleaner/cleaner.py:/cleaner.py
+      - ./dev/cleaner/cleaner.py:/cleaner.py
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - 8000:8000
@@ -153,7 +156,7 @@ services:
       - postgres
     volumes:
       - /tmp:/tmp
-      - ./config/clair:/config
+      - ./common/config/clair:/config
     command: [-config, /config/config.yaml]
     logging:
       driver: "syslog"

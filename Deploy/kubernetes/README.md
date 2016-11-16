@@ -21,6 +21,16 @@ There are some args of the script:
 #### Basic Configuration
 These Basic Configuration must be set. Otherwise you can't deploy Harbor on Kubernetes.
 - `harbor.cfg` : Basic config of Harbor. Please refer to `harbor.cfg` .
+- `make/kubernetes/**/*.rc.yaml` : Specify configs of containers.  
+  You need to specify the path to your images in all `*.rc.yaml` . example:
+
+  ```
+  containers:
+      - name: nginx-app
+        # it's very importent that you need modify the path of image.
+        image: harbor/nginx
+  ```
+  
 - `*.pvc.yaml` : Persistent Volume Claim.  
   You can set capacity of storage in these files. example:
   

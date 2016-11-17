@@ -294,7 +294,8 @@ func (p *ProjectAPI) List() {
 			log.Errorf("failed to get total of projects: %v", err)
 			p.CustomAbort(http.StatusInternalServerError, "")
 		}
-		projectList, err = dao.GetProjects(projectName, 1, pageSize, pageSize*(page-1))
+		p.userID = p.ValidateUser()
+		projectList, err = dao.GetPublicOrOwnProjects(p.userID, projectName)
 		if err != nil {
 			log.Errorf("failed to get projects: %v", err)
 			p.CustomAbort(http.StatusInternalServerError, "")

@@ -33,7 +33,7 @@ func AddRepository(repo models.RepoRecord) error {
 		"(select project_id as project_id from project where name=?), " +
 		"(select manager as manager from project where name=?), ?, ?, ?, ?, NOW(), NULL "
 
-	_, err := o.Raw(sql, repo.OwnerName, repo.ProjectName, repo.Name, repo.Description, repo.PullCount, repo.StarCount).Exec()
+	_, err := o.Raw(sql, repo.OwnerName, repo.ProjectName, repo.ProjectName, repo.Name, repo.Description, repo.PullCount, repo.StarCount).Exec()
 	return err
 }
 

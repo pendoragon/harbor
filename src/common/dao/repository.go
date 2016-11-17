@@ -33,7 +33,7 @@ func AddRepository(repo models.RepoRecord) error {
 		"(select project_id as project_id from project where name=?), " +
 		"(select manager as manager from project where name=?), ?, ?, ?, ?, NOW(), NULL "
 
-	_, err := o.Raw(sql, repo.OwnerName, repo.ProjectName, repo.Name, repo.Description, repo.PullCount, repo.StarCount).Exec()
+	_, err := o.Raw(sql, repo.OwnerName, repo.ProjectName, repo.ProjectName, repo.Name, repo.Description, repo.PullCount, repo.StarCount).Exec()
 	return err
 }
 
@@ -192,6 +192,11 @@ func GetRepositoryWithConditions(userid int, project_ids []string, label_ids []s
 			pick_repo_names = append(pick_repo_names, lebelhook.RepoName)
 		}
 		log.Debugf("pick_repo_names: %v", pick_repo_names)
+	}
+
+	if len(label_ids) > 0 && len(labelhooks) <= 0 {
+		log.Infof("No repository found by specify labels")
+		return 0, []*models.RepoRecord{}, nil
 	}
 
 	sql := "select r.* " +

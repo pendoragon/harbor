@@ -194,6 +194,11 @@ func GetRepositoryWithConditions(userid int, project_ids []string, label_ids []s
 		log.Debugf("pick_repo_names: %v", pick_repo_names)
 	}
 
+	if len(label_ids) > 0 && len(labelhooks) <= 0 {
+		log.Infof("No repository found by specify labels")
+		return 0, []*models.RepoRecord{}, nil
+	}
+
 	sql := "select r.* " +
 		"from repository r " +
 		"inner join project p " +

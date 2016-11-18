@@ -311,3 +311,23 @@ func getProjects(userID int, name string, args ...int64) ([]models.Project, erro
 
 	return projects, err
 }
+
+func GetPublicOrOwnProjects(userID int, name string) ([]models.Project, error) {
+	projects := []models.Project{}
+
+	o := GetOrmer()
+	sql := ""
+	queryParam := []interface{}{}
+
+	sql = `select * from project p where p.deleted = 0 and (p.owner_id = ? or p.public = 1)`
+	queryParam = append(queryParam, userID)
+
+	if name != "" {
+		sql += ` and p.name like ? `
+		queryParam = append(queryParam, "%"+name+"%")
+	}
+
+	_, err := o.Raw(sql, queryParam).QueryRows(&projects)
+
+	return projects, err
+}

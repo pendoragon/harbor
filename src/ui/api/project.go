@@ -250,53 +250,6 @@ func (p *ProjectAPI) Get() {
 	p.ServeJSON()
 }
 
-// Delete ...
-// func (p *ProjectAPI) Delete() {
-// 	if p.projectID == 0 {
-// 		p.CustomAbort(http.StatusBadRequest, "project ID is required")
-// 	}
-
-// 	userID := p.ValidateUser()
-
-// 	if !hasProjectAdminRole(userID, p.projectID) {
-// 		p.CustomAbort(http.StatusForbidden, "")
-// 	}
-
-// 	contains, err := projectContainsRepo(p.projectName)
-// 	if err != nil {
-// 		log.Errorf("failed to check whether project %s contains any repository: %v", p.projectName, err)
-// 		p.CustomAbort(http.StatusInternalServerError, "")
-// 	}
-// 	if contains {
-// 		p.CustomAbort(http.StatusPreconditionFailed, "project contains repositores, can not be deleted")
-// 	}
-
-// 	contains, err = projectContainsPolicy(p.projectID)
-// 	if err != nil {
-// 		log.Errorf("failed to check whether project %s contains any policy: %v", p.projectName, err)
-// 		p.CustomAbort(http.StatusInternalServerError, "")
-// 	}
-// 	if contains {
-// 		p.CustomAbort(http.StatusPreconditionFailed, "project contains policies, can not be deleted")
-// 	}
-
-// 	if err = dao.DeleteProject(p.projectID); err != nil {
-// 		log.Errorf("failed to delete project %d: %v", p.projectID, err)
-// 		p.CustomAbort(http.StatusInternalServerError, "")
-// 	}
-
-// 	go func() {
-// 		if err := dao.AddAccessLog(models.AccessLog{
-// 			UserID:    userID,
-// 			ProjectID: p.projectID,
-// 			RepoName:  p.projectName,
-// 			Operation: "delete",
-// 		}); err != nil {
-// 			log.Errorf("failed to add access log: %v", err)
-// 		}
-// 	}()
-// }
-
 func projectContainsRepo(name string) (bool, error) {
 	repositories, err := getReposByProject(name)
 	if err != nil {
@@ -341,7 +294,8 @@ func (p *ProjectAPI) List() {
 			log.Errorf("failed to get total of projects: %v", err)
 			p.CustomAbort(http.StatusInternalServerError, "")
 		}
-		projectList, err = dao.GetProjects(projectName, 1, pageSize, pageSize*(page-1))
+		p.userID = p.ValidateUser()
+		projectList, err = dao.GetPublicOrOwnProjects(p.userID, projectName)
 		if err != nil {
 			log.Errorf("failed to get projects: %v", err)
 			p.CustomAbort(http.StatusInternalServerError, "")

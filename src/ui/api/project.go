@@ -278,6 +278,8 @@ func (p *ProjectAPI) List() {
 
 	var projectList []models.Project
 	projectName := p.GetString("project_name")
+	start, err := p.GetInt("start")
+	limit, err := p.GetInt("limit")
 
 	isPublic := p.GetString("is_public")
 	if len(isPublic) > 0 {
@@ -295,7 +297,7 @@ func (p *ProjectAPI) List() {
 			p.CustomAbort(http.StatusInternalServerError, "")
 		}
 		p.userID = p.ValidateUser()
-		projectList, err = dao.GetPublicOrOwnProjects(p.userID, projectName)
+		projectList, err = dao.GetPublicOrOwnProjects(p.userID, projectName, start, limit)
 		if err != nil {
 			log.Errorf("failed to get projects: %v", err)
 			p.CustomAbort(http.StatusInternalServerError, "")

@@ -312,7 +312,16 @@ func getProjects(userID int, name string, args ...int64) ([]models.Project, erro
 	return projects, err
 }
 
-func GetPublicOrOwnProjects(userID int, name string) ([]models.Project, error) {
+func GetPublicOrOwnProjects(userID int, name string, start int, limit int) ([]models.Project, error) {
+	log.Debugf("GetPublicOrOwnProjects start: %d, limit: %v", start, limit)
+	if start == 0 {
+		start = 1
+	}
+
+	if limit == 0 {
+		limit = 20
+	}
+
 	projects := []models.Project{}
 
 	o := GetOrmer()
@@ -327,6 +336,9 @@ func GetPublicOrOwnProjects(userID int, name string) ([]models.Project, error) {
 		queryParam = append(queryParam, "%"+name+"%")
 	}
 
+	sql += ` limit ?,?`
+	queryParam = append(queryParam, start-1)
+	queryParam = append(queryParam, limit)
 	_, err := o.Raw(sql, queryParam).QueryRows(&projects)
 
 	return projects, err

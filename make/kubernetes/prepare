@@ -1,0 +1,138 @@
+#!/usr/bin/env python3
+
+import argparse
+import configparser
+import io
+import os
+import random
+import re
+import string
+import subprocess
+
+# prepare base dir
+base_dir = os.path.dirname(__file__)
+
+parser = argparse.ArgumentParser(description='Generate *.cm.yaml')
+parser.add_argument('-f', default=os.path.join(base_dir, '../harbor.cfg'),
+                    dest='config_file', help='harbor config file')
+parser.add_argument('-k', default='',
+                    dest='private_key', help='harbor https private key(pem)')
+parser.add_argument('-c', default='',
+                    dest='cert', help='harbor https cert(pem)')
+args = parser.parse_args()
+
+# read config file
+config_str = ''
+if os.path.isfile(args.config_file):
+    with io.open(args.config_file) as conf:
+        config_str = conf.read()
+else:
+    raise Exception('Error: No such file(' + args.config_file + ')')
+
+config_str = '[harbor]\n' + config_str
+config = configparser.ConfigParser()
+config.read_string(config_str)
+
+def get_config(key: str) -> object:
+    """get value by key
+    """
+    if config.has_option('harbor', key):
+        return config.get('harbor', key)
+    print('Warning: Key(' + key + ') is not existing. Use empty string as default')
+    return ''
+
+
+def set_config(key: str, value: object):
+    """set key & value 
+    """
+    config['harbor'][key] = value
+
+# read https pkey & cert
+if args.private_key != '':
+    if os.path.isfile(args.private_key):
+        with io.open(args.private_key) as pkey:
+            set_config('https_pkey', pkey.read())
+    else:
+        raise Exception('Error: https private key is not existing')
+else:
+    set_config('https_pkey', 'NEED_SET')
+    print('Warning: https_pkey is not provided. Please set it manually')
+
+if args.cert != '':
+    if os.path.isfile(args.cert):
+        with io.open(args.cert) as cert:
+            set_config('https_cert', cert.read())
+    else:
+        raise Exception('Error: https cert is not existing')
+else:
+    set_config('https_cert', 'NEED_SET')
+    print('Warning: https_cert is not provided. Please set it manually')
+    
+# validate
+if len(get_config('secret_key')) != 16:
+    raise Exception('Error: The length of secret key has to be 16 characters!')
+
+# add configs
+set_config('ui_url', get_config('ui_url_protocol') +
+           '://' + get_config('hostname'))
+set_config('ui_secret', ''.join(random.choice(
+    string.ascii_letters + string.digits) for i in range(16)))
+
+# generate auth pkey & cert 
+openssl = subprocess.call(['which','openssl'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+if openssl == 0:
+    pkey = subprocess.check_output(['openssl','genrsa','4096'], stderr=subprocess.DEVNULL)
+    subj = '/C={0}/ST={1}/L={2}/O={3}/OU={4}/CN={5}/emailAddress={6}'.format(get_config('crt_country'), 
+            get_config('crt_state'), get_config('crt_location'), get_config('crt_organization'),
+            get_config('crt_organizationalunit'), get_config('crt_commonname'), get_config('crt_email'))
+    openssl = subprocess.Popen(['openssl', 'req', '-new', '-x509',  '-key', '/dev/stdin', '-days', '3650', '-subj', subj],
+                            stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    cert = openssl.communicate(input=pkey)[0]
+    set_config('auth_pkey', pkey.decode())
+    set_config('auth_cert', cert.decode())
+else:
+    set_config('auth_pkey', 'NEED_SET')
+    set_config('auth_cert', 'NEED_SET')
+    print('Warning: auth_pkey and auth_cert cannot be generated automatically without openssl.  Please set it manually')
+    
+
+
+variable = re.compile(r'{{.+?}}')
+detail = re.compile(r'((\d+) )?([a-zA-Z_0-9-]+)')
+def render_template(tmpl: str) -> str:
+    """render template
+    replace $$(number of leading spaces)name$$ with config
+    examples:
+    config: hostname='test\ntest'
+    $$hostname$$ -> 'test\ntest'
+    $$4 hostname$$ -> 'test\n    test'
+    """
+    matches = variable.findall(tmpl)
+    for match in matches:
+        segs = detail.search(match)
+        if segs.group() == '':
+            raise Exception('Error: Invalid template item(' + match + ')')
+        value = get_config(segs.group(3))
+        spaces = segs.group(2)
+        if spaces != '' and spaces != None:
+            leading = ''.join(' ' for i in range(int(spaces)))
+            value = str(value).replace('\n', '\n' + leading)
+        tmpl = tmpl.replace(match, value)
+    return tmpl
+
+
+def generate_template(tmpl: str, dest: str):
+    """generate file
+    """
+    with io.open(tmpl) as tmpl:
+        with io.open(dest, 'w') as dest:
+            dest.write(render_template(tmpl.read()))
+
+
+template_dir = os.path.join(base_dir, 'templates')
+output_dir = base_dir
+generate_template(os.path.join(template_dir, 'ui.cm.yaml'), os.path.join(output_dir, 'ui/ui.cm.yaml'))
+generate_template(os.path.join(template_dir, 'jobservice.cm.yaml'), os.path.join(output_dir, 'jobservice/jobservice.cm.yaml'))
+generate_template(os.path.join(template_dir, 'mysql.cm.yaml'), os.path.join(output_dir, 'mysql/mysql.cm.yaml'))
+generate_template(os.path.join(template_dir, 'nginx.cm.yaml'), os.path.join(output_dir, 'nginx/nginx.cm.yaml'))
+generate_template(os.path.join(template_dir, 'registry.cm.yaml'), os.path.join(output_dir, 'registry/registry.cm.yaml'))

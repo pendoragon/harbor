@@ -13,8 +13,9 @@ We provide a python script `make/kubernetes/prepare` to generate Kubernetes Conf
 
 There are some args of the script:
 - -f: Default Value is `../harbor.cfg` . You can specify other config file of Harbor.
-- -k: Path to https private key. If you want to use https in Harbor, you should set it
-- -c: Path to https certification. If you want to use https in Harbor, you should set it 
+- -k: Path to https private key. You can set it in `harbor.cfg`. This arg can overwrite `ssl_cert_key` in `harbor.cfg` .
+- -c: Path to https certification. You can set it in `harbor.cfg`. This arg can overwrite `ssl_cert` in `harbor.cfg` .
+- -s: Path to secret key. Must be 16 characters. If you don't set it, It will be generated automatically. 
 
 #### Basic Configuration
 These Basic Configuration must be set. Otherwise you can't deploy Harbor on Kubernetes.
@@ -62,7 +63,7 @@ These Basic Configuration must be set. Otherwise you can't deploy Harbor on Kube
 Then you can generate ConfigMap files by :
 
 ```
-python3 make/kubernetes/prepare -f make/harbor.cfg -k path-to-https-pkey -c path-to-https-cert
+python make/kubernetes/prepare
 ```
 
 These files will be generated:

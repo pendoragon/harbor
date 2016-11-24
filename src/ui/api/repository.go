@@ -164,6 +164,34 @@ func (ra *RepositoryAPI) GetRepositoryWithConditions() {
 
 	log.Debugf("total: %v", total)
 
+	// get vulnerabilities for each repository
+	for i, repository := range repositories {
+		log.Debugf("repository[%v]: %v", i, repository)
+
+		vulnerabilities, err := dao.GetImageVulnerability(repository.Name, repository.LatestTag)
+		log.Debugf("get vulnerabilities: %v", vulnerabilities)
+
+		if err != nil {
+			log.Errorf("failed to get vulnerabilities: %v", err)
+			repository.VStatus = 404
+			repository.VCount = 0
+			repository.Vs = ""
+			continue
+		}
+
+		if len(vulnerabilities) <= 0 {
+			log.Errorf("vulnerabilities length is 0")
+			repository.VStatus = 200
+			repository.VCount = 0
+			repository.Vs = ""
+			continue
+		}
+
+		repository.VStatus = 200
+		repository.VCount = vulnerabilities[0].VulnerabilityCount
+		repository.Vs = vulnerabilities[0].Vulnerabilities
+	}
+
 	repository_res := repositoryRes{
 		Total: total,
 		Repos: repositories,

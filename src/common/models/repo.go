@@ -35,6 +35,9 @@ type RepoRecord struct {
 	LTagCTime    string    `orm:"column(ltag_ctime)" json:"ltag_ctime"`
 	Author       string    `orm:"column(author)" json:"author"`
 	LabelNames   string    `orm:"column(label_names)" json:"label_names"`
+	VStatus      int       `orm:"-" json:"v_status"` // vulnerabilities analysis status
+	VCount       int       `orm:"-" json:"v_count"`  // vulnerabilities count
+	Vs           string    `orm:"-" json:"vs"`       // vulnerabilities string
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }

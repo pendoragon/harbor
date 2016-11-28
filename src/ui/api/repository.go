@@ -171,17 +171,9 @@ func (ra *RepositoryAPI) GetRepositoryWithConditions() {
 		vulnerabilities, err := dao.GetImageVulnerability(repository.Name, repository.LatestTag)
 		log.Debugf("get vulnerabilities: %v", vulnerabilities)
 
-		if err != nil {
+		if err != nil || len(vulnerabilities) <= 0 {
 			log.Errorf("failed to get vulnerabilities: %v", err)
 			repository.VStatus = 404
-			repository.VCount = 0
-			repository.Vs = ""
-			continue
-		}
-
-		if len(vulnerabilities) <= 0 {
-			log.Errorf("vulnerabilities length is 0")
-			repository.VStatus = 200
 			repository.VCount = 0
 			repository.Vs = ""
 			continue

@@ -431,6 +431,9 @@ func (ra *RepositoryAPI) GetManifests() {
 	result := struct {
 		Manifest interface{} `json:"manifest"`
 		Config   interface{} `json:"config,omitempty" `
+		VStatus  int         `json:"v_status"` // vulnerabilities analysis status
+		VCount   int         `json:"v_count"`  // vulnerabilities count
+		Vs       string      `json:"vs"`       // vulnerabilities string
 	}{}
 
 	mediaTypes := []string{}
@@ -474,6 +477,24 @@ func (ra *RepositoryAPI) GetManifests() {
 		}
 
 		result.Config = string(b)
+	}
+
+	// get image
+	vulnerabilities, err := dao.GetImageVulnerability(repoName, tag)
+	log.Debugf("get vulnerabilities: %v", vulnerabilities)
+
+	// do ... while (0)
+	for ok := true; ok; ok = false {
+		if err != nil || len(vulnerabilities) <= 0 {
+			log.Errorf("failed to get vulnerabilities: %v", err)
+			result.VStatus = 404
+			result.VCount = 0
+			result.Vs = ""
+			break
+		}
+		result.VStatus = 200
+		result.VCount = vulnerabilities[0].VulnerabilityCount
+		result.Vs = vulnerabilities[0].Vulnerabilities
 	}
 
 	ra.Data["json"] = result

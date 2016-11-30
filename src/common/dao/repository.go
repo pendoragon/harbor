@@ -238,10 +238,14 @@ func GetRepositoryWithConditions(userid int, project_ids []string, label_ids []s
 	log.Debugf("sql: %v", sql)
 
 	repos := []*models.RepoRecord{}
-	_, err := GetOrmer().Raw(sql, userid, offset, page_size).QueryRows(&repos)
+	n, err := GetOrmer().Raw(sql, userid, offset, page_size).QueryRows(&repos)
 
 	if err != nil {
 		return 0, nil, err
+	}
+
+	if n == 0 {
+		return 0, nil, nil
 	}
 
 	// get total count
@@ -250,10 +254,14 @@ func GetRepositoryWithConditions(userid int, project_ids []string, label_ids []s
 	sql_count = strings.Replace(sql_count, "r.*", "COUNT(*)", 1)
 	log.Debugf("sql_count: %v", sql_count)
 	var total []int
-	_, err = GetOrmer().Raw(sql_count, userid).QueryRows(&total)
+	n, err = GetOrmer().Raw(sql_count, userid).QueryRows(&total)
 
 	if err != nil {
 		return 0, nil, err
+	}
+
+	if n == 0 {
+		return 0, nil, nil
 	}
 
 	log.Debugf("total: %v", total)
@@ -280,10 +288,14 @@ func GetUnmarkedRepositoryByProjectIDAndLabelID(project_id string, label_id stri
 	log.Debugf("sql: %v", sql)
 
 	repos := []*models.RepoRecord{}
-	_, err := GetOrmer().Raw(sql, project_id, label_id, start-1, limit).QueryRows(&repos)
+	n, err := GetOrmer().Raw(sql, project_id, label_id, start-1, limit).QueryRows(&repos)
 
 	if err != nil {
 		return 0, nil, err
+	}
+
+	if n == 0 {
+		return 0, nil, nil
 	}
 
 	// get total count
@@ -292,10 +304,14 @@ func GetUnmarkedRepositoryByProjectIDAndLabelID(project_id string, label_id stri
 	sql_count = strings.Replace(sql_count, "*", "COUNT(*)", 1)
 	log.Debugf("sql_count: %v", sql_count)
 	var total []int
-	_, err = GetOrmer().Raw(sql_count, project_id, label_id).QueryRows(&total)
+	n, err = GetOrmer().Raw(sql_count, project_id, label_id).QueryRows(&total)
 
 	if err != nil {
 		return 0, nil, err
+	}
+
+	if n == 0 {
+		return 0, nil, nil
 	}
 
 	log.Debugf("total: %v", total)

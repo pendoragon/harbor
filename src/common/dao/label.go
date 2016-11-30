@@ -138,6 +138,10 @@ func DeleteLabel(labelID int64) error {
 		return err
 	}
 
+	if len(repo_names) == 0 {
+		return nil
+	}
+
 	// update label names cached in repositry table
 	return SyncRepositoryLabelNames(repo_names[0])
 }
@@ -162,6 +166,10 @@ func DeleteLabelHook(labelHookID int64) error {
 	if _, err := o.Raw(sql, labelHookID).Exec(); err != nil {
 		log.Errorf("Failed to delete labelhook, error: %v", err)
 		return err
+	}
+
+	if len(repo_names) == 0 {
+		return nil
 	}
 
 	// update label names cached in repositry table

@@ -645,13 +645,13 @@ func TriggerSyncRepositoryLatestManifest(repo_name string) error {
 		}
 	}
 
+	tags = append(tags, ts...)
+	log.Debugf("get tags: %v", tags)
+
 	if len(tags) == 0 {
 		log.Errorf("tags not found for repo: %v", repo_name)
 		return nil
 	}
-
-	tags = append(tags, ts...)
-	log.Debugf("get tags: %v", tags)
 
 	sort.Strings(tags)
 	log.Debugf("get tags after sort: %v", tags)

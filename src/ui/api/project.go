@@ -114,9 +114,11 @@ func (p *ProjectAPI) Post() {
 	}
 
 	// sync registry for new project
-	if err := SyncRegistry(); err != nil {
-		log.Errorf("SyncRegistry error: %v", err)
-	}
+	go func() {
+		if err := SyncRegistry(); err != nil {
+			log.Errorf("SyncRegistry error: %v", err)
+		}
+	}()
 
 	// return project id
 	p.RenderError(http.StatusOK, strconv.FormatInt(projectID, 10))

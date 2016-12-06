@@ -5,9 +5,9 @@ Harbor can be installed by one of two installers:
 
 - **Offline installer:** Use this installer when the host does not have Internet connection. The installer contains pre-built images so its size is larger.
 
-Both installers can be downloaded from the [release page](https://github.com/vmware/harbor/releases). The installation process of both installers are the same, this guide describes the steps to install and confiugure Harbor.
+Both installers can be downloaded from the [release page](https://github.com/vmware/harbor/releases). The installation process of both installers are the same, this guide describes the steps to install and configure Harbor.
 
-In addition, the deployment instructions on Kubernetes has been created by the community. Refer to [Deploy Harbor on Kubernetes](kubernetes_deployment.md) for details.
+In addition, the deployment instructions on Kubernetes has been created by the community. Refer to [make Harbor on Kubernetes](kubernetes_deployment.md) for details.
 
 ## Prerequisites for the target host
 Harbor is deployed as several Docker containers, and, therefore, can be deployed on any Linux distribution that supports Docker. The target host requires Python, Docker, and Docker Compose to be installed.  
@@ -140,7 +140,7 @@ Starting harbor_proxy_1
 Starting harbor_jobservice_1
 ```  
 
-To change Harbor's confiugration, first stop existing Harbor instance, update harbor.cfg, and then run install.sh again:
+To change Harbor's configuration, first stop existing Harbor instance, update harbor.cfg, and then run install.sh again:
 ```
 $ sudo docker-compose down
 
@@ -281,7 +281,7 @@ $ sudo install.sh
 If a container is not in **UP** state, check the log file of that container in directory ```/var/log/harbor```. For example, if the container ```harbor_ui_1``` is not running, you should look at the log file ```docker_ui.log```.  
 
 
-2.When setting up Harbor behind an nginx proxy or elastic load balancing, look for the line below, in `Deploy/config/nginx/nginx.conf` and remove it from the sections if the proxy already has similar settings: `location /`, `location /v2/` and `location /service/`.
+2.When setting up Harbor behind an nginx proxy or elastic load balancing, look for the line below, in `make/config/nginx/nginx.conf` and remove it from the sections if the proxy already has similar settings: `location /`, `location /v2/` and `location /service/`.
 ```
 proxy_set_header X-Forwarded-Proto $scheme;
 ```

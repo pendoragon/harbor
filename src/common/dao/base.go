@@ -21,6 +21,9 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/astaxie/beego"
+	_ "github.com/astaxie/beego/session/mysql"
+
 	"github.com/astaxie/beego/orm"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
@@ -49,6 +52,20 @@ func InitDatabase() {
 	if err := database.Register(); err != nil {
 		panic(err)
 	}
+}
+
+func InitSessionProvider(provider string) {
+
+	if provider == "mysql" {
+		// use mysql to save session
+		host, port, user, password, database := getMySQLConnInfo()
+		beego.BConfig.WebConfig.Session.SessionProvider = "mysql"
+		msqlURL := user + ":" + password + "@tcp(" + host + ":" + port + ")/" + database
+		log.Debugf("msqlURL: %v", msqlURL)
+		beego.BConfig.WebConfig.Session.SessionProviderConfig = msqlURL
+	}
+
+	return
 }
 
 func getDatabase() (db Database, err error) {

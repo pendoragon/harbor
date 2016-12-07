@@ -95,6 +95,12 @@
 			"versionExact": "v1.6.1"
 		},
 		{
+			"checksumSHA1": "Xo2VNaG/X3oo6g+yz1U4g7TCj8c=",
+			"path": "github.com/astaxie/beego/session/mysql",
+			"revision": "90999717dda6193c6f970eec52e289b0a9e74998",
+			"revisionTime": "2016-12-05T15:14:26Z"
+		},
+		{
 			"checksumSHA1": "+W/P2deANUhWrFkdP9m4SLJ7620=",
 			"path": "github.com/astaxie/beego/session/redis",
 			"revision": "1aeb3d90512734def678c7aa9f612fe6f659e6b5",

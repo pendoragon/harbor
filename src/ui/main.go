@@ -71,6 +71,10 @@ func main() {
 		beego.BConfig.WebConfig.Session.SessionProvider = "redis"
 		beego.BConfig.WebConfig.Session.SessionProviderConfig = redisURL
 	}
+
+	// use mysql to save session
+	dao.InitSessionProvider("mysql")
+
 	//
 	beego.AddTemplateExt("htm")
 

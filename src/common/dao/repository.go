@@ -40,9 +40,13 @@ func AddRepository(repo models.RepoRecord) error {
 // AddImageVulnerability adds a image vulnerability to the database.
 func AddImageVulnerability(image_vulnerability models.ImageVulnerability) error {
 	o := GetOrmer()
-	sql := "insert into image_vulnerability (repo_name, tag, v_count, vulnerabilities, creation_time, update_time) values (?, ?, ?, ?, NOW(), NOW())"
+	sql := `insert into image_vulnerability (repo_name, tag, v_count, vulnerabilities, creation_time, update_time) 
+			values (?, ?, ?, ?, NOW(), NOW()) 
+			ON DUPLICATE KEY UPDATE v_count=?, vulnerabilities=?, update_time=NOW()`
 
-	_, err := o.Raw(sql, image_vulnerability.RepoName, image_vulnerability.Tag, image_vulnerability.VulnerabilityCount, image_vulnerability.Vulnerabilities).Exec()
+	_, err := o.Raw(sql, image_vulnerability.RepoName, image_vulnerability.Tag,
+		image_vulnerability.VulnerabilityCount, image_vulnerability.Vulnerabilities,
+		image_vulnerability.VulnerabilityCount, image_vulnerability.Vulnerabilities).Exec()
 	return err
 }
 

@@ -20,7 +20,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
+	// "time"
 
 	"github.com/vmware/harbor/src/common/utils"
 	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
@@ -77,7 +77,7 @@ func NewRegistryWithModifiers(endpoint string, insecure bool, modifiers ...Modif
 
 	return NewRegistry(endpoint, &http.Client{
 		Transport: transport,
-		Timeout:   30 * time.Second,
+		// Timeout:   30 * time.Second,
 	})
 }
 

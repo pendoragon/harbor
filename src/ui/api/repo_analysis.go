@@ -204,6 +204,27 @@ func (r *RepoAnalysisAPI) Get() {
 		r.CustomAbort(http.StatusInternalServerError, "image analysis falied")
 	}
 
+	vulnerabilities_bytes, err := json.Marshal(&vulnerabilities)
+
+	if err != nil {
+		log.Errorf("json.Marshal error: %v", err)
+		r.CustomAbort(http.StatusInternalServerError, "json.Marshal error")
+	}
+
+	ImageVulnerability := models.ImageVulnerability{
+		RepoName:           repoName,
+		Tag:                tag,
+		VulnerabilityCount: len(vulnerabilities),
+		Vulnerabilities:    string(vulnerabilities_bytes),
+	}
+
+	err = dao.AddImageVulnerability(ImageVulnerability)
+
+	if err != nil {
+		log.Errorf("add image vulnerability in to DB error: %v", err)
+		r.CustomAbort(http.StatusInternalServerError, "add image vulnerability in to DB error")
+	}
+
 	r.Data["json"] = vulnerabilities
 	r.ServeJSON()
 }

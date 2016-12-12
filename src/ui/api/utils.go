@@ -27,6 +27,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/ui/service/cache"
@@ -322,6 +323,42 @@ func SyncRegistry() error {
 	}
 
 	log.Debugf("Sync repositories from registry to DB is done.")
+	return nil
+}
+
+// SyncImageAnalysis syncs the image analysis result and save in database.
+func SyncImageAnalysis() error {
+	log.Debugf("Start syncing image analysis... ")
+
+	reposInRegistry, err := catalog()
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	endpoint := os.Getenv("REGISTRY_URL")
+	for _, repo := range reposInRegistry {
+		// get tags
+		rc, err := newRepositoryClient(endpoint, api.GetIsInsecure(), "admin", os.Getenv("HARBOR_ADMIN_PASSWORD"),
+			repo, "repository", repo, "pull", "push", "*")
+
+		if err != nil {
+			log.Errorf("error occurred while initializing repository client for %s: %v", repo, err)
+			continue
+		}
+
+		tagList, err := rc.ListTag()
+		if len(tagList) == 0 {
+			continue
+		}
+
+		for _, tag := range tagList {
+			log.Debugf("Trigger image analysis: %v:%v", repo, tag)
+			go TriggerRepositoryAnalysisAndSaveResult(repo, tag)
+		}
+	}
+
+	log.Debugf("Sync image analysis is done.")
 	return nil
 }
 

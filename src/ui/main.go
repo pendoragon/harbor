@@ -87,5 +87,8 @@ func main() {
 	if err := api.SyncRegistry(); err != nil {
 		log.Error(err)
 	}
+
+	go api.SyncImageAnalysis()
+
 	beego.Run()
 }

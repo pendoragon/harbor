@@ -354,6 +354,19 @@ func SyncImageAnalysis() error {
 
 		for _, tag := range tagList {
 			log.Debugf("Trigger image analysis: %v:%v", repo, tag)
+
+			vulnerabilities, err := dao.GetImageVulnerability(repo, tag)
+			log.Debugf("get vulnerabilities: %v", vulnerabilities)
+
+			if err != nil {
+				log.Errorf("failed to get vulnerabilities: %v", err)
+				continue
+			}
+
+			if len(vulnerabilities) > 0 {
+				continue
+			}
+
 			go TriggerRepositoryAnalysisAndSaveResult(repo, tag)
 		}
 	}

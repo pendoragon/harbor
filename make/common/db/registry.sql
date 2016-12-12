@@ -70,8 +70,8 @@ create table project (
  # The max length of name controlled by API is 30, 
  # and 11 is reserved for marking the deleted project.
  name varchar (41) NOT NULL,
- manager varchar (50),
- remark varchar (500) NOT NULL DEFAULT 'remark',
+ manager varchar (128),
+ remark varchar (512) NOT NULL DEFAULT 'remark',
  creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
  update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  deleted tinyint (1) DEFAULT 0 NOT NULL,
@@ -103,8 +103,8 @@ create table label (
  label_id int NOT NULL AUTO_INCREMENT,
  owner_id int NOT NULL,
  project_id int NOT NULL,
- name varchar (50) NOT NULL,
- remark varchar (100) NOT NULL,
+ name varchar (255) NOT NULL,
+ remark varchar (512) NOT NULL,
  creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
  update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  deleted tinyint (1) DEFAULT 0 NOT NULL,
@@ -119,8 +119,8 @@ ALTER TABLE label ADD UNIQUE (project_id, name);
 create table labelhook (
  labelhook_id int NOT NULL AUTO_INCREMENT,
  label_id int NOT NULL,
- label_name varchar (50) NOT NULL,
- repo_name varchar (50) NOT NULL,
+ label_name varchar (255) NOT NULL,
+ repo_name varchar (255) NOT NULL,
  creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
  update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  deleted tinyint (1) DEFAULT 0 NOT NULL,
@@ -133,8 +133,8 @@ ALTER TABLE labelhook ADD UNIQUE (label_id, repo_name);
 
 create table repo_remark (
  repo_remark_id int NOT NULL AUTO_INCREMENT,
- repo_name varchar (50) NOT NULL,
- remark varchar (50) NOT NULL,
+ repo_name varchar (255) NOT NULL,
+ remark varchar (512) NOT NULL,
  creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
  update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  deleted tinyint (1) DEFAULT 0 NOT NULL,
@@ -144,8 +144,8 @@ create table repo_remark (
 
 create table image_vulnerability (
  rv_id int NOT NULL AUTO_INCREMENT,
- repo_name varchar (50) NOT NULL,
- tag varchar (50) NOT NULL,
+ repo_name varchar (255) NOT NULL,
+ tag varchar (64) NOT NULL,
  v_count int NOT NULL,
  vulnerabilities text,
  creation_time timestamp DEFAULT CURRENT_TIMESTAMP,

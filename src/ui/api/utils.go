@@ -367,7 +367,8 @@ func SyncImageAnalysis() error {
 				continue
 			}
 
-			go TriggerRepositoryAnalysisAndSaveResult(repo, tag)
+			time.Sleep(500 * time.Millisecond)
+			TriggerRepositoryAnalysisAndSaveResult(repo, tag)
 		}
 	}
 

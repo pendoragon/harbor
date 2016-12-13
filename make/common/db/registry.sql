@@ -147,7 +147,7 @@ create table image_vulnerability (
  repo_name varchar (255) NOT NULL,
  tag varchar (64) NOT NULL,
  v_count int NOT NULL,
- vulnerabilities text,
+ vulnerabilities longtext,
  creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
  update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  PRIMARY KEY (rv_id),

@@ -126,6 +126,7 @@ create table labelhook (
  deleted tinyint (1) DEFAULT 0 NOT NULL,
  PRIMARY KEY (labelhook_id),
  FOREIGN KEY (label_id) REFERENCES label(label_id) ON DELETE CASCADE,
+ FOREIGN KEY (repo_name) REFERENCES repository(name) ON DELETE CASCADE,
  UNIQUE (labelhook_id)
 );
 

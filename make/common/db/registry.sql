@@ -99,6 +99,27 @@ create table project_member (
 insert into project_member (project_id, user_id, role, creation_time, update_time) values
 (1, 1, 1, NOW(), NOW());
 
+create table repository (
+ repository_id int NOT NULL AUTO_INCREMENT,
+ name varchar(255) NOT NULL,
+ project_id int NOT NULL,
+ owner_id int NOT NULL,
+ manager varchar (50),
+ description text,
+ pull_count int DEFAULT 0 NOT NULL,
+ star_count int DEFAULT 0 NOT NULL,
+ tag_count int DEFAULT 0 NOT NULL,
+ latest_tag varchar (64),
+ ltag_ctime varchar (128),
+ author varchar (512),
+ label_names varchar (2048),
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+ primary key (repository_id),
+ FOREIGN KEY (project_id) REFERENCES project (project_id) ON DELETE CASCADE,
+ UNIQUE (name)
+);
+
 create table label (
  label_id int NOT NULL AUTO_INCREMENT,
  owner_id int NOT NULL,
@@ -168,27 +189,6 @@ create table access_log (
  INDEX pid_optime (project_id, op_time),
  FOREIGN KEY (user_id) REFERENCES user(user_id),
  FOREIGN KEY (project_id) REFERENCES project (project_id) ON DELETE CASCADE
-);
-
-create table repository (
- repository_id int NOT NULL AUTO_INCREMENT,
- name varchar(255) NOT NULL,
- project_id int NOT NULL,
- owner_id int NOT NULL,
- manager varchar (50),
- description text,
- pull_count int DEFAULT 0 NOT NULL,
- star_count int DEFAULT 0 NOT NULL,
- tag_count int DEFAULT 0 NOT NULL,
- latest_tag varchar (64),
- ltag_ctime varchar (128),
- author varchar (512),
- label_names varchar (2048),
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
- primary key (repository_id),
- FOREIGN KEY (project_id) REFERENCES project (project_id) ON DELETE CASCADE,
- UNIQUE (name)
 );
 
 create table replication_policy (

@@ -634,8 +634,8 @@ func TriggerSyncRepositoryLatestManifest(repo_name string) error {
 	endpoint := os.Getenv("REGISTRY_URL")
 
 	// get tags and latest manifest
-	rc, err := newRepositoryClient(endpoint, api.GetIsInsecure(), "admin", os.Getenv("HARBOR_ADMIN_PASSWORD"),
-		repo_name, "repository", repo_name, "pull", "push", "*")
+	rc, err := cache.NewRepositoryClient(endpoint, api.GetIsInsecure(), "admin", repo_name,
+		"repository", repo_name, "pull", "push", "*")
 
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repo_name, err)

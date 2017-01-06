@@ -2,7 +2,7 @@ version: '2'
 services:
   log:
     container_name: cargo_log
-    image: cargo.caicloud.io/cargo/cargo_log:latest
+    image: cargo.caicloud.io/cargo/cargo_log:v0.1
     # build:
     #   context: ../
     #   dockerfile: make/ubuntu/log/Dockerfile
@@ -13,7 +13,7 @@ services:
       - 1514:514
   registry:
     container_name: cargo_registry
-    image: cargo.caicloud.io/cargo/cargo_registry:latest
+    image: cargo.caicloud.io/cargo/cargo_registry:v0.1
     restart: always
     volumes:
       - /data/registry:/storage
@@ -31,7 +31,7 @@ services:
         tag: "registry"
   mysql:
     container_name: cargo_mysql
-    image: cargo.caicloud.io/cargo/cargo_mysql:latest
+    image: cargo.caicloud.io/cargo/cargo_mysql:v0.1
     # build: ./common/db/
     restart: always
     volumes:
@@ -50,7 +50,7 @@ services:
         tag: "mysql"
   ui:
     container_name: cargo_ui
-    image: cargo.caicloud.io/cargo/cargo_ui:latest
+    image: cargo.caicloud.io/cargo/cargo_ui:v0.1
     # build:
     #   context: ../
     #   dockerfile: make/dev/ui/Dockerfile
@@ -73,7 +73,7 @@ services:
         tag: "ui"
   jobservice:
     container_name: cargo_jobservice
-    image: cargo.caicloud.io/cargo/cargo_jobservice:latest
+    image: cargo.caicloud.io/cargo/cargo_jobservice:v0.1
     # build:
     #   context: ../
     #   dockerfile: make/dev/jobservice/Dockerfile
@@ -92,7 +92,7 @@ services:
         tag: "jobservice"
   proxy:
     container_name: cargo_proxy
-    image: cargo.caicloud.io/cargo/cargo_proxy:latest
+    image: cargo.caicloud.io/cargo/cargo_proxy:v0.1
     restart: always
     volumes:
       - ./common/config/nginx:/etc/nginx
@@ -112,7 +112,7 @@ services:
 
   cleaner:
     container_name: cargo_cleaner
-    image: cargo.caicloud.io/cargo/cargo_cleaner:latest
+    image: cargo.caicloud.io/cargo/cargo_cleaner:v0.1
     # build:
     #   context: ../
     #   dockerfile: make/dev/cleaner/Dockerfile
@@ -131,7 +131,7 @@ services:
 
   postgres:
     container_name: cargo_postgres
-    image: cargo.caicloud.io/cargo/cargo_postgres:latest
+    image: cargo.caicloud.io/cargo/cargo_postgres:v0.1
     restart: always
     volumes:
       - /data/postgres:/var/lib/postgresql/data
@@ -148,7 +148,7 @@ services:
 
   clair:
     container_name: cargo_clair
-    image: cargo.caicloud.io/cargo/cargo_clair:latest
+    image: cargo.caicloud.io/cargo/cargo_clair:v0.1
     restart: always
     depends_on:
       - postgres

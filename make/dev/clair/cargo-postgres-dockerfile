@@ -1,0 +1,5 @@
+From cargo.caicloud.io/cargo/cargo_postgres:v0.1
+
+MAINTAINER scorpiocph@gmail.com
+
+ADD postgres /var/lib/postgresql/data

@@ -147,7 +147,7 @@ func (c *Clair) pushLayer(layer *layer) error {
 	}
 	request.Header.Set("Content-Type", "application/json")
 	//fmt.Printf("Pushing layer %v", layer)
-	response, err := (&http.Client{Timeout: time.Minute}).Do(request)
+	response, err := (&http.Client{Timeout: 15 * time.Minute}).Do(request)
 	if err != nil {
 		return fmt.Errorf("Can't push layer to Clair: %s", err)
 	}

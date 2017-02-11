@@ -38,7 +38,15 @@ type ProjectAPI struct {
 }
 
 type projectReq struct {
-	ProjectName string `json:"project_name"`
+	ProjectName   string `json:"project_name"`
+	ProjectNameV1 string `json:"name"`
+	Manager       string `json:"manager"`
+	Remark        string `json:"remark"`
+	Public        int    `json:"public"`
+}
+
+type projectReqV1 struct {
+	ProjectName string `json:"name"`
 	Manager     string `json:"manager"`
 	Remark      string `json:"remark"`
 	Public      int    `json:"public"`
@@ -84,7 +92,12 @@ func (p *ProjectAPI) Post() {
 		p.RenderError(http.StatusBadRequest, fmt.Sprintf("invalid request: %v", err))
 		return
 	}
+
 	projectName := req.ProjectName
+	if len(req.ProjectNameV1) > 0 {
+		projectName = req.ProjectNameV1
+	}
+
 	exist, err := dao.ProjectExists(projectName)
 	if err != nil {
 		log.Errorf("Error happened checking project existence in db, error: %v, project name: %s", err, projectName)
@@ -121,8 +134,7 @@ func (p *ProjectAPI) Post() {
 	}()
 
 	// return project id
-	p.RenderError(http.StatusOK, strconv.FormatInt(projectID, 10))
-	// p.Redirect(http.StatusCreated, strconv.FormatInt(projectID, 10))
+	p.RenderError(http.StatusCreated, strconv.FormatInt(projectID, 10))
 }
 
 // Put ...
@@ -188,6 +200,7 @@ func (p *ProjectAPI) Delete() {
 		p.RenderError(http.StatusInternalServerError, "Failed to delete label")
 	}
 
+	p.RenderNoContent()
 	// TODO, CPH
 	// failed to add access log: Error 1452: Cannot add or update a child row:
 	// a foreign key constraint fails (`registry`.`access_log`, CONSTRAINT `access_log_ibfk_2`
@@ -249,6 +262,35 @@ func (p *ProjectAPI) Get() {
 	}
 
 	p.Data["json"] = project
+	p.ServeJSON()
+}
+
+// GetV1 ...
+func (p *ProjectAPI) GetV1() {
+	project, err := dao.GetProjectByID(p.projectID)
+	if err != nil {
+		log.Errorf("failed to get project %d: %v", p.projectID, err)
+		p.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	if project.Public == 0 {
+		userID := p.ValidateUser()
+		if !checkProjectPermission(userID, p.projectID) {
+			p.CustomAbort(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
+		}
+	}
+
+	projectV1 := models.ProjectV1{
+		ProjectID:    project.ProjectID,
+		Name:         project.Name,
+		Manager:      project.Manager,
+		Remark:       project.Remark,
+		RepoCount:    project.RepoCount,
+		Public:       project.Public,
+		CreationTime: project.CreationTime,
+		UpdateTime:   project.UpdateTime,
+	}
+	p.Data["json"] = projectV1
 	p.ServeJSON()
 }
 
@@ -368,6 +410,60 @@ func (p *ProjectAPI) List() {
 	p.ServeJSON()
 }
 
+// List ...
+func (p *ProjectAPI) ListV1() {
+	log.Infof("ListV1...")
+	var total int64
+	var err error
+
+	page, pageSize := p.GetPaginationParams()
+
+	var projectList []models.Project
+	projectName := p.GetString("project_name")
+	start, err := p.GetInt("start")
+	limit, err := p.GetInt("limit")
+
+	total, err = dao.GetTotalOfProjects(projectName, 1)
+	if err != nil {
+		log.Errorf("failed to get total of projects: %v", err)
+		p.CustomAbort(http.StatusInternalServerError, "")
+	}
+	p.userID = p.ValidateUser()
+	projectList, err = dao.GetPublicOrOwnProjects(p.userID, projectName, start, limit)
+	if err != nil {
+		log.Errorf("failed to get projects: %v", err)
+		p.CustomAbort(http.StatusInternalServerError, "")
+	}
+
+	for i := 0; i < len(projectList); i++ {
+		repos, err := dao.GetRepositoryByProjectName(projectList[i].Name)
+		if err != nil {
+			log.Errorf("failed to get repositories of project %s: %v", projectList[i].Name, err)
+			p.CustomAbort(http.StatusInternalServerError, "")
+		}
+
+		projectList[i].RepoCount = len(repos)
+	}
+
+	var projectListV1 []models.ProjectV1
+	for i := 0; i < len(projectList); i++ {
+		projectListV1 = append(projectListV1, models.ProjectV1{
+			ProjectID:    projectList[i].ProjectID,
+			Name:         projectList[i].Name,
+			Manager:      projectList[i].Manager,
+			Remark:       projectList[i].Remark,
+			RepoCount:    projectList[i].RepoCount,
+			Public:       projectList[i].Public,
+			CreationTime: projectList[i].CreationTime,
+			UpdateTime:   projectList[i].UpdateTime,
+		})
+	}
+
+	p.SetPaginationHeader(total, page, pageSize)
+	p.Data["json"] = models.NewListResponse(int(total), projectListV1)
+	p.ServeJSON()
+}
+
 // ToggleProjectPublic ...
 func (p *ProjectAPI) ToggleProjectPublic() {
 	p.userID = p.ValidateUser()
@@ -461,13 +557,19 @@ func isProjectAdmin(userID int, pid int64) bool {
 
 func validateProjectReq(req projectReq) error {
 	pn := req.ProjectName
-	if isIllegalLength(req.ProjectName, projectNameMinLen, projectNameMaxLen) {
+	if len(req.ProjectNameV1) > 0 {
+		pn = req.ProjectNameV1
+	}
+
+	if isIllegalLength(pn, projectNameMinLen, projectNameMaxLen) {
 		return fmt.Errorf("Project name is illegal in length. (greater than 4 or less than 30)")
 	}
+
 	validProjectName := regexp.MustCompile(`^[a-z0-9](?:-*[a-z0-9])*(?:[._][a-z0-9](?:-*[a-z0-9])*)*$`)
 	legal := validProjectName.MatchString(pn)
 	if !legal {
 		return fmt.Errorf("Project name is not in lower case or contains illegal characters!")
 	}
+
 	return nil
 }

@@ -26,10 +26,23 @@ type Label struct {
 	ProjectID       int64     `orm:"column(project_id)" json:"project_id"`
 	Name            string    `orm:"column(name)" json:"name"`
 	Remark          string    `orm:"column(remark)" json:"remark"`
+	ReposStr        string    `orm:"column(repos_str)" json:"reposStr"`
+	Repos           []string  `orm:"-" json:"repos"`
 	CreationTime    time.Time `orm:"column(creation_time)" json:"creation_time"`
 	CreationTimeStr string    `json:"creation_time_str"`
 	UpdateTime      time.Time `orm:"column(update_time)" json:"update_time"`
 	Deleted         int       `orm:"column(deleted)" json:"deleted"`
+}
+
+type LabelV1 struct {
+	LabelID      int64     `orm:"pk;column(label_id)" json:"id"`
+	OwnerID      int       `orm:"column(owner_id)" json:"ownerId"`
+	ProjectID    int64     `orm:"column(project_id)" json:"projectId"`
+	Name         string    `orm:"column(name)" json:"name"`
+	Remark       string    `orm:"column(remark)" json:"remark"`
+	Repos        []string  `orm:"-" json:"repos"`
+	CreationTime time.Time `orm:"column(creation_time)" json:"creationTime"`
+	UpdateTime   time.Time `orm:"column(update_time)" json:"updateTime"`
 }
 
 // LabelHook holds the relationship between label and image.

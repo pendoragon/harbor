@@ -89,7 +89,7 @@ func (lh *LabelHookAPI) Post() {
 	label, err := dao.GetLabelByID(labelID)
 	labelHook := models.LabelHook{
 		LabelID:   req.LabelID,
-		LabelName: label[0].Name,
+		LabelName: label.Name,
 		RepoName:  req.RepoName,
 	}
 

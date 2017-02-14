@@ -157,6 +157,26 @@ func RepositoryExists(name string) bool {
 	return o.QueryTable("repository").Filter("name", name).Exist()
 }
 
+//RepositoryIdExists returns whether the repository exists according to its id.
+func RepositoryIdExists(id int64) bool {
+	o := GetOrmer()
+	return o.QueryTable("repository").Filter("repository_id", id).Exist()
+}
+
+// GetRepositoryByIdV1 ...
+func GetRepositoryByIdV1(id int64) (*models.RepoRecordV1, error) {
+	sql := `select * from repository where repository_id = ?`
+
+	var repos []models.RepoRecordV1
+	_, err := GetOrmer().Raw(sql, id).QueryRows(&repos)
+
+	if len(repos) < 0 {
+		return nil, err
+	}
+
+	return &repos[0], err
+}
+
 // GetRepositoryByProjectName ...
 func GetRepositoryByProjectName(name string) ([]*models.RepoRecord, error) {
 	sql := `select * from repository 

@@ -20,7 +20,7 @@ import (
 	"net/http"
 	"time"
 
-	au "github.com/docker/distribution/registry/client/auth"
+	"github.com/docker/distribution/registry/client/auth/challenge"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/registry"
 )
@@ -37,7 +37,7 @@ type Authorizer interface {
 // And it implements interface Modifier
 type AuthorizerStore struct {
 	authorizers []Authorizer
-	challenges  []au.Challenge
+	challenges  []challenge.Challenge
 }
 
 // NewAuthorizerStore ...

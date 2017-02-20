@@ -101,3 +101,7 @@ func initRouters() {
 	beego.Router("/service/notifications", &service.NotificationHandler{})
 	beego.Router("/service/token", &token.Handler{})
 }
+
+func initV1Routers() {
+	beego.Router("/api/v1/repos", &api.RepositoryAPIV1{}, "get:List;post:UploadImages")
+}

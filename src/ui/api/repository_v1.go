@@ -236,24 +236,28 @@ func (r *RepositoryAPIV1) UploadImages() {
 	// ref:
 	// echo "{\"username\":\"admin\",\"password\":\"Harbor12345\"}" | base64
 	// eyJ1c2VybmFtZSI6ImFkbWluIiwicGFzc3dvcmQiOiJIYXJib3IxMjM0NSJ9Cg==
-	type RegistryAuth struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
+	var authConfig = types.AuthConfig{
+		Username:      "admin",
+		Password:      os.Getenv("HARBOR_ADMIN_PASSWORD"),
+		ServerAddress: os.Getenv("HARBOR_REG_URL"),
 	}
 
-	var registryAuth = RegistryAuth{
-		Username: "admin",
-		Password: os.Getenv("HARBOR_ADMIN_PASSWORD"),
+	loginResponse, err := client.RegistryLogin(context.Background(), authConfig)
+	if err != nil {
+		log.Errorf("loginResponse error: %v", err)
+		r.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("loginResponse error: %v", err))
 	}
 
-	registryAuthBytes, err := json.Marshal(&registryAuth)
+	log.Debugf("loginResponse.Status: %v", loginResponse.Status)
 
-	registryAuthB64 := base64.StdEncoding.EncodeToString(registryAuthBytes)
-	log.Debugf("registryAuthB64: %v", registryAuthB64)
+	authConfigBytes, err := json.Marshal(&authConfig)
+
+	authConfigB64 := base64.StdEncoding.EncodeToString(authConfigBytes)
+	log.Debugf("authConfigB64: %v", authConfigB64)
 
 	// docker push
 	imagePushResponse, err := client.ImagePush(context.Background(), imageToBePushed, types.ImagePushOptions{
-		RegistryAuth: registryAuthB64,
+		RegistryAuth: authConfigB64,
 	})
 	if err != nil {
 		log.Errorf("UploadImages ImagePush error: %v", err)

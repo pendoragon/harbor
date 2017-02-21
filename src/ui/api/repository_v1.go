@@ -42,6 +42,9 @@ import (
 	"github.com/vmware/harbor/src/ui/service/cache"
 )
 
+const defaultPageIndex int64 = 1
+const defaultPageSize int64 = 20
+
 // RepositoryAPIV1 handles request to /api/v1/repos /api/v1/repos/:rid /api/v1/repos/:rid/tags /api/v1/repos/:rid/tags/:tag,
 // the parm has to be put in the query string as the web framework can not parse the URL if it contains veriadic sectors.
 type RepositoryAPIV1 struct {
@@ -91,10 +94,8 @@ func (r *RepositoryAPIV1) List() {
 	log.Debugf("List repos, labels: %v", labels)
 
 	// default value
-	var page int64
-	var pageSize int64
-	page = 1
-	pageSize = 20
+	page := defaultPageIndex
+	pageSize := defaultPageSize
 
 	if limit > 0 {
 		page = (start / limit) + 1
@@ -207,11 +208,11 @@ func (r *RepositoryAPIV1) UploadImages() {
 	// Loaded image: dind:cph
 	log.Debugf("imageLoadResponseBody.Stream: %v", imageLoadResponseBody.Stream)
 
-	iamgeLoaded := strings.TrimSpace(strings.Replace(imageLoadResponseBody.Stream, "Loaded image: ", "", -1))
-	log.Debugf("imageLoaded: %v", iamgeLoaded)
+	imageLoaded := strings.TrimSpace(strings.Replace(imageLoadResponseBody.Stream, "Loaded image: ", "", -1))
+	log.Debugf("imageLoaded: %v", imageLoaded)
 
-	imageLoadedRepo := strings.TrimSpace((strings.Split(iamgeLoaded, ":"))[0])
-	imageLoadedTag := strings.TrimSpace((strings.Split(iamgeLoaded, ":"))[1])
+	imageLoadedRepo := strings.TrimSpace((strings.Split(imageLoaded, ":"))[0])
+	imageLoadedTag := strings.TrimSpace((strings.Split(imageLoaded, ":"))[1])
 
 	log.Debugf("imageLoaded ok, repo: %v, tag: %v", imageLoadedRepo, imageLoadedTag)
 
@@ -224,10 +225,10 @@ func (r *RepositoryAPIV1) UploadImages() {
 		tag = imageLoadedTag
 	}
 
-	// docker tag iamgeLoaded imageToBePushed
+	// docker tag imageLoaded imageToBePushed
 	imageToBePushed := os.Getenv("HARBOR_REG_URL") + "/" + project + "/" + repo + ":" + tag
 	log.Debugf("imageToBePushed: %v", imageToBePushed)
-	err = client.ImageTag(context.Background(), iamgeLoaded, imageToBePushed)
+	err = client.ImageTag(context.Background(), imageLoaded, imageToBePushed)
 	if err != nil {
 		log.Errorf("UploadImages ImageTag error: %v", err)
 		r.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("UploadImages ImageTag error: %v", err))

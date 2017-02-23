@@ -16,6 +16,8 @@
 package api
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -24,8 +26,15 @@ import (
 	"strconv"
 	"strings"
 
+	"golang.org/x/net/context"
+
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/client"
+	"github.com/docker/distribution/manifest/schema1"
+	"github.com/docker/distribution/manifest/schema2"
+
 	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
@@ -35,6 +44,10 @@ import (
 	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
 	"github.com/vmware/harbor/src/ui/service/cache"
 )
+
+
+const defaultPageIndex int64 = 1
+const defaultPageSize int64 = 20
 
 // RepositoryAPIV1 handles request to /api/v1/repos /api/v1/repos/:rid /api/v1/repos/:rid/tags /api/v1/repos/:rid/tags/:tag,
 // the parm has to be put in the query string as the web framework can not parse the URL if it contains veriadic sectors.
@@ -85,10 +98,9 @@ func (r *RepositoryAPIV1) List() {
 	log.Debugf("List repos, labels: %v", labels)
 
 	// default value
-	var page int64
-	var pageSize int64
-	page = 1
-	pageSize = 20
+
+	page := defaultPageIndex
+	pageSize := defaultPageSize
 
 	if limit > 0 {
 		page = (start / limit) + 1
@@ -125,6 +137,155 @@ func (r *RepositoryAPIV1) List() {
 
 	r.Data["json"] = models.NewListResponse(total, reposV1)
 	r.ServeJSON()
+}
+
+// UploadImages
+func (r *RepositoryAPIV1) UploadImages() {
+	project := r.GetString("project")
+	repo := r.GetString("repo")
+	tag := r.GetString("tag")
+
+	if len(project) <= 0 {
+		log.Errorf("UploadImages error, project is nil")
+		r.CustomAbort(http.StatusBadRequest, fmt.Sprintf("UploadImages error, project is nil"))
+	}
+
+	log.Debugf("UploadImages project: %v", project)
+	log.Debugf("UploadImages repo: %v", repo)
+	log.Debugf("UploadImages tag: %v", tag)
+
+	// read file
+	imageTar, _, err := r.GetFile("imageTar")
+	if err != nil {
+		log.Errorf("UploadImages GetFile error: %v", err)
+		r.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("UploadImages GetFile error: %v", err))
+	}
+
+	client, err := client.NewEnvClient()
+	if err != nil {
+		log.Errorf("UploadImages NewEnvClient error: %v", err)
+		r.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("UploadImages NewEnvClient error: %v", err))
+	}
+
+	// docker load -i
+	const quiet = true
+	imageLoadResponse, err := client.ImageLoad(context.Background(), imageTar, quiet)
+	if err != nil {
+		log.Errorf("UploadImages ImageLoad error: %v", err)
+		r.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("UploadImages ImageLoad error: %v", err))
+	}
+
+	log.Debugf("imageLoadResponse.JSON: %v", imageLoadResponse.JSON)
+
+	body, err := ioutil.ReadAll(imageLoadResponse.Body)
+	if err != nil {
+		log.Errorf("UploadImages Read imageLoadResponse.Body error: %v", err)
+		r.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("UploadImages Read imageLoadResponse.Body error: %v", err))
+	}
+
+	type ImageLoadResponseBody struct {
+		Stream string `json:"stream"`
+	}
+
+	// ref:
+	// {"stream":"Loaded image: dind:cph\n"}#015
+	// TODO:
+	// if one image has two tags, only the first one will be parsed
+	body_str := (strings.Split(string(body), "\r"))[0]
+	log.Debugf("body_str: %v", body_str)
+
+	if strings.Contains(body_str, "errorDetail") ||
+		!strings.Contains(body_str, "Loaded image: ") {
+		log.Errorf("UploadImages Image Load error: %v", body_str)
+		r.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("UploadImages Image Load error: %v", body_str))
+	}
+
+	body_str = strings.TrimSpace(body_str)
+
+	var imageLoadResponseBody ImageLoadResponseBody
+	err = json.Unmarshal([]byte(body_str), &imageLoadResponseBody)
+	if err != nil {
+		log.Errorf("UploadImages json.Unmarshal error: %v", err)
+		r.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("UploadImages json.Unmarshal error: %v", err))
+	}
+
+	// ref:
+	// Loaded image: dind:cph
+	log.Debugf("imageLoadResponseBody.Stream: %v", imageLoadResponseBody.Stream)
+
+	imageLoaded := strings.TrimSpace(strings.Replace(imageLoadResponseBody.Stream, "Loaded image: ", "", -1))
+	log.Debugf("imageLoaded: %v", imageLoaded)
+
+	imageLoadedRepo := strings.TrimSpace((strings.Split(imageLoaded, ":"))[0])
+	imageLoadedTag := strings.TrimSpace((strings.Split(imageLoaded, ":"))[1])
+
+	log.Debugf("imageLoaded ok, repo: %v, tag: %v", imageLoadedRepo, imageLoadedTag)
+
+	// use imageLoadedRepo/imageLoadedTag if repo/tag from input is nil
+	if len(repo) <= 0 {
+		repo = imageLoadedRepo
+	}
+
+	if len(tag) <= 0 {
+		tag = imageLoadedTag
+	}
+
+	// docker tag imageLoaded imageToBePushed
+	imageToBePushed := os.Getenv("HARBOR_REG_URL") + "/" + project + "/" + repo + ":" + tag
+	log.Debugf("imageToBePushed: %v", imageToBePushed)
+	err = client.ImageTag(context.Background(), imageLoaded, imageToBePushed)
+	if err != nil {
+		log.Errorf("UploadImages ImageTag error: %v", err)
+		r.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("UploadImages ImageTag error: %v", err))
+	}
+
+	// ref:
+	// echo "{\"username\":\"admin\",\"password\":\"Harbor12345\"}" | base64
+	// eyJ1c2VybmFtZSI6ImFkbWluIiwicGFzc3dvcmQiOiJIYXJib3IxMjM0NSJ9Cg==
+	var authConfig = types.AuthConfig{
+		Username:      "admin",
+		Password:      os.Getenv("HARBOR_ADMIN_PASSWORD"),
+		ServerAddress: os.Getenv("HARBOR_REG_URL"),
+	}
+
+	loginResponse, err := client.RegistryLogin(context.Background(), authConfig)
+	if err != nil {
+		log.Errorf("loginResponse error: %v", err)
+		r.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("loginResponse error: %v", err))
+	}
+
+	log.Debugf("loginResponse.Status: %v", loginResponse.Status)
+
+	authConfigBytes, err := json.Marshal(&authConfig)
+
+	authConfigB64 := base64.StdEncoding.EncodeToString(authConfigBytes)
+	log.Debugf("authConfigB64: %v", authConfigB64)
+
+	// docker push
+	imagePushResponse, err := client.ImagePush(context.Background(), imageToBePushed, types.ImagePushOptions{
+		RegistryAuth: authConfigB64,
+	})
+	if err != nil {
+		log.Errorf("UploadImages ImagePush error: %v", err)
+		r.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("UploadImages ImagePush error: %v", err))
+	}
+
+	imagePushResponseBody, err := ioutil.ReadAll(imagePushResponse)
+	if err != nil {
+		log.Errorf("UploadImages imagePushResponse ReadAll error: %v", err)
+		r.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("UploadImages imagePushResponse ReadAll error: %v", err))
+	}
+
+	imagePushResponseBodyStr := string(imagePushResponseBody)
+	log.Debugf("imagePushResponseBodyStr: %v", imagePushResponseBodyStr)
+
+	if strings.Contains(imagePushResponseBodyStr, "denied") ||
+		strings.Contains(imagePushResponseBodyStr, "unauthorized") {
+		log.Errorf("UploadImages image push error: %v", "authentication required")
+		r.CustomAbort(http.StatusUnauthorized, fmt.Sprintf("UploadImages image push error: authentication required"))
+	}
+
+	r.CustomAbort(http.StatusCreated, "")
 }
 
 // Get handles GET /api/v1/repos/:rid

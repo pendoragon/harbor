@@ -40,6 +40,18 @@ type Project struct {
 	RepoCount  int       `orm:"-" json:"repo_count"`
 }
 
+// ProjectV1 holds the details of a project v1.
+type ProjectV1 struct {
+	ProjectID    int64     `orm:"pk;column(project_id)" json:"id"`
+	Name         string    `orm:"column(name)" json:"name"`
+	Manager      string    `orm:"column(manager)" json:"manager"`
+	Remark       string    `orm:"column(remark)" json:"remark"`
+	RepoCount    int       `orm:"-" json:"repoCount"`
+	Public       int       `orm:"column(public)" json:"public"`
+	CreationTime time.Time `orm:"column(creation_time)" json:"creationTime"`
+	UpdateTime   time.Time `orm:"update_time" json:"updateTime"`
+}
+
 // ProjectSorter holds an array of projects
 type ProjectSorter struct {
 	Projects []Project

@@ -72,6 +72,55 @@ func NewLabelHook(labelhook models.LabelHook) (int64, error) {
 	return labelHookID, err
 }
 
+// UpdateLabel update label's name remark and repos
+func UpdateLabel(label models.Label) error {
+	params := []interface{}{}
+
+	sql := "update label set "
+	if len(label.Name) > 0 {
+		sql += "name = ? "
+		params = append(params, label.Name)
+	}
+
+	if len(label.Remark) > 0 {
+		if strings.Contains(sql, "=") {
+			sql += ", remark = ? "
+		} else {
+			sql += "remark = ? "
+		}
+
+		params = append(params, label.Remark)
+	}
+
+	if len(label.ReposStr) > 0 {
+		if strings.Contains(sql, "=") {
+			sql += ", repos_str = ? "
+		} else {
+			sql += "repos_str = ? "
+		}
+
+		params = append(params, label.ReposStr)
+	}
+
+	if !strings.Contains(sql, "=") {
+		log.Debugf("Nothing to do on update label")
+		return nil
+	}
+
+	sql += "where label_id = ?"
+	log.Debugf("sql: %v", sql)
+	params = append(params, label.LabelID)
+
+	o := GetOrmer()
+
+	if _, err := o.Raw(sql, params).Exec(); err != nil {
+		log.Errorf("Failed to update label, error: %v", err)
+		return err
+	}
+
+	return nil
+}
+
 // UpsertRepoRemark insert a repo_remark to the database or update if exists.
 func UpsertRepoRemark(repoRemark models.RepoRemark) (int64, error) {
 	log.Debugf("UpsertRepoRemark: %v", repoRemark)
@@ -130,6 +179,16 @@ func DeleteLabel(labelID int64) error {
 
 	log.Debugf("get repo_names by label_id, repo_names: %v", repo_names)
 
+	// get repos_str by label_id
+	var repos_str []string
+	sql = "select repos_str from label where label_id = ?"
+
+	if _, err := o.Raw(sql, labelID).QueryRows(&repos_str); err != nil {
+		log.Errorf("Failed to query label to get repos_str, error: %v", err)
+		return err
+	}
+
+	log.Debugf("get repo_names by label_id, repo_names: %v", repo_names)
 	// delete label
 	sql = "delete from label where label_id = ?"
 
@@ -138,12 +197,27 @@ func DeleteLabel(labelID int64) error {
 		return err
 	}
 
+	// update label names cached in repositry table V1
+	if len(repos_str) > 0 {
+		go func() {
+			repos := strings.Split(repos_str[0], ",")
+			for _, repo := range repos {
+				log.Debugf("SyncRepositoryLabelNamesV1, repo: %v", repo)
+				SyncRepositoryLabelNamesV1(repo)
+			}
+		}()
+	}
+
 	if len(repo_names) == 0 {
 		return nil
 	}
 
 	// update label names cached in repositry table
-	return SyncRepositoryLabelNames(repo_names[0])
+	go func() {
+		SyncRepositoryLabelNames(repo_names[0])
+	}()
+
+	return nil
 }
 
 // Delete remove a labelhook from the database.
@@ -184,6 +258,29 @@ func SyncRepositoryLabelNames(repo_name string) error {
 	sql := "select label_name from labelhook where repo_name = ?"
 
 	if _, err := o.Raw(sql, repo_name).QueryRows(&label_names); err != nil {
+		log.Errorf("Failed to get label names by repo_name, error: %v", err)
+		return err
+	}
+
+	label_names_str := strings.Join(label_names, ",")
+	log.Debugf("label_names_str: %v", label_names_str)
+
+	if err := UpdateRepositoryLabelNames(repo_name, label_names_str); err != nil {
+		log.Errorf("Error occurred in UpdateRepositoryLabelNames: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+func SyncRepositoryLabelNamesV1(repo_name string) error {
+	log.Debugf("SyncRepositoryLabelNamesV1, repo_name: %v", repo_name)
+	o := GetOrmer()
+	var label_names []string
+
+	sql := "select name from label where repos_str like ?"
+
+	if _, err := o.Raw(sql, "%"+repo_name+"%").QueryRows(&label_names); err != nil {
 		log.Errorf("Failed to get label names by repo_name, error: %v", err)
 		return err
 	}
@@ -247,7 +344,7 @@ func LabelHookExists(nameOrID interface{}) (bool, error) {
 }
 
 // GetLabelByID ...
-func GetLabelByID(label_id int64) ([]models.Label, error) {
+func GetLabelByID(label_id int64) (*models.Label, error) {
 	o := GetOrmer()
 
 	if label_id < 0 {
@@ -270,7 +367,7 @@ func GetLabelByID(label_id int64) ([]models.Label, error) {
 		return nil, nil
 	}
 
-	return labels, nil
+	return &labels[0], nil
 }
 
 // GetLabelsByProjectID ...
@@ -278,7 +375,7 @@ func GetLabelsByProjectID(project_id int64, labelName string) ([]models.Label, e
 	o := GetOrmer()
 
 	sql := `select l.label_id, l.project_id, l.name, l.remark,
-			l.owner_id, l.creation_time, l.update_time
+			l.repos_str, l.owner_id, l.creation_time, l.update_time
 			from label l left join user u on l.owner_id = u.user_id
 			where l.deleted = 0`
 	queryParam := make([]interface{}, 1)
@@ -302,7 +399,7 @@ func GetLabelsByProjectID(project_id int64, labelName string) ([]models.Label, e
 	}
 
 	if count == 0 {
-		return nil, nil
+		return make([]models.Label, 0), nil
 	}
 
 	return labels, nil

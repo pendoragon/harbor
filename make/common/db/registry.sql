@@ -177,6 +177,15 @@ create table image_vulnerability (
  UNIQUE (repo_name, tag)
 );
 
+create table job (
+ job_id int NOT NULL AUTO_INCREMENT,
+ type varchar (255) NOT NULL,
+ message varchar (255) NOT NULL,
+ creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
+ PRIMARY KEY (job_id),
+ UNIQUE (job_id)
+);
+
 create table access_log (
  log_id int NOT NULL AUTO_INCREMENT,
  user_id int NOT NULL,

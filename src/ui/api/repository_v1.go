@@ -32,9 +32,6 @@ import (
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
-	"github.com/docker/distribution/manifest/schema1"
-	"github.com/docker/distribution/manifest/schema2"
-
 	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
@@ -44,7 +41,6 @@ import (
 	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
 	"github.com/vmware/harbor/src/ui/service/cache"
 )
-
 
 const defaultPageIndex int64 = 1
 const defaultPageSize int64 = 20
@@ -141,13 +137,30 @@ func (r *RepositoryAPIV1) List() {
 
 // UploadImages
 func (r *RepositoryAPIV1) UploadImages() {
+	jobId, err := r.GetInt64("jobId", 0)
+
+	if err != nil || jobId == 0 {
+		log.Errorf("UploadImages error, jobId is nil")
+		r.CustomAbort(http.StatusBadRequest, "UploadImages error, jobId is nil")
+	}
+
+	// do upload image job asynchronous
+	go uploadImagesJob(r, jobId)
+
+	r.CustomAbort(http.StatusCreated, strconv.FormatInt(jobId, 10))
+}
+
+// uploadImagesJob
+func uploadImagesJob(r *RepositoryAPIV1, jobId int64) error {
+	log.Errorf("do uploadImagesJob jobId: %v", jobId)
+
 	project := r.GetString("project")
 	repo := r.GetString("repo")
 	tag := r.GetString("tag")
 
 	if len(project) <= 0 {
 		log.Errorf("UploadImages error, project is nil")
-		r.CustomAbort(http.StatusBadRequest, fmt.Sprintf("UploadImages error, project is nil"))
+		return dao.UpdateJobStatusById(jobId, "UploadImages error, project is nil")
 	}
 
 	log.Debugf("UploadImages project: %v", project)
@@ -158,13 +171,13 @@ func (r *RepositoryAPIV1) UploadImages() {
 	imageTar, _, err := r.GetFile("imageTar")
 	if err != nil {
 		log.Errorf("UploadImages GetFile error: %v", err)
-		r.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("UploadImages GetFile error: %v", err))
+		return dao.UpdateJobStatusById(jobId, fmt.Sprintf("UploadImages GetFile error: %v", err))
 	}
 
 	client, err := client.NewEnvClient()
 	if err != nil {
 		log.Errorf("UploadImages NewEnvClient error: %v", err)
-		r.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("UploadImages NewEnvClient error: %v", err))
+		return dao.UpdateJobStatusById(jobId, fmt.Sprintf("UploadImages NewEnvClient error: %v", err))
 	}
 
 	// docker load -i
@@ -172,7 +185,7 @@ func (r *RepositoryAPIV1) UploadImages() {
 	imageLoadResponse, err := client.ImageLoad(context.Background(), imageTar, quiet)
 	if err != nil {
 		log.Errorf("UploadImages ImageLoad error: %v", err)
-		r.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("UploadImages ImageLoad error: %v", err))
+		return dao.UpdateJobStatusById(jobId, fmt.Sprintf("UploadImages ImageLoad error: %v", err))
 	}
 
 	log.Debugf("imageLoadResponse.JSON: %v", imageLoadResponse.JSON)
@@ -180,7 +193,7 @@ func (r *RepositoryAPIV1) UploadImages() {
 	body, err := ioutil.ReadAll(imageLoadResponse.Body)
 	if err != nil {
 		log.Errorf("UploadImages Read imageLoadResponse.Body error: %v", err)
-		r.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("UploadImages Read imageLoadResponse.Body error: %v", err))
+		return dao.UpdateJobStatusById(jobId, fmt.Sprintf("UploadImages Read imageLoadResponse.Body error: %v", err))
 	}
 
 	type ImageLoadResponseBody struct {
@@ -197,7 +210,7 @@ func (r *RepositoryAPIV1) UploadImages() {
 	if strings.Contains(body_str, "errorDetail") ||
 		!strings.Contains(body_str, "Loaded image: ") {
 		log.Errorf("UploadImages Image Load error: %v", body_str)
-		r.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("UploadImages Image Load error: %v", body_str))
+		return dao.UpdateJobStatusById(jobId, fmt.Sprintf("UploadImages Image Load error: %v", body_str))
 	}
 
 	body_str = strings.TrimSpace(body_str)
@@ -206,7 +219,7 @@ func (r *RepositoryAPIV1) UploadImages() {
 	err = json.Unmarshal([]byte(body_str), &imageLoadResponseBody)
 	if err != nil {
 		log.Errorf("UploadImages json.Unmarshal error: %v", err)
-		r.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("UploadImages json.Unmarshal error: %v", err))
+		return dao.UpdateJobStatusById(jobId, fmt.Sprintf("UploadImages json.Unmarshal error: %v", err))
 	}
 
 	// ref:
@@ -236,7 +249,7 @@ func (r *RepositoryAPIV1) UploadImages() {
 	err = client.ImageTag(context.Background(), imageLoaded, imageToBePushed)
 	if err != nil {
 		log.Errorf("UploadImages ImageTag error: %v", err)
-		r.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("UploadImages ImageTag error: %v", err))
+		return dao.UpdateJobStatusById(jobId, fmt.Sprintf("UploadImages ImageTag error: %v", err))
 	}
 
 	// ref:
@@ -267,13 +280,13 @@ func (r *RepositoryAPIV1) UploadImages() {
 	})
 	if err != nil {
 		log.Errorf("UploadImages ImagePush error: %v", err)
-		r.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("UploadImages ImagePush error: %v", err))
+		return dao.UpdateJobStatusById(jobId, fmt.Sprintf("UploadImages ImagePush error: %v", err))
 	}
 
 	imagePushResponseBody, err := ioutil.ReadAll(imagePushResponse)
 	if err != nil {
 		log.Errorf("UploadImages imagePushResponse ReadAll error: %v", err)
-		r.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("UploadImages imagePushResponse ReadAll error: %v", err))
+		return dao.UpdateJobStatusById(jobId, fmt.Sprintf("UploadImages imagePushResponse ReadAll error: %v", err))
 	}
 
 	imagePushResponseBodyStr := string(imagePushResponseBody)
@@ -282,10 +295,10 @@ func (r *RepositoryAPIV1) UploadImages() {
 	if strings.Contains(imagePushResponseBodyStr, "denied") ||
 		strings.Contains(imagePushResponseBodyStr, "unauthorized") {
 		log.Errorf("UploadImages image push error: %v", "authentication required")
-		r.CustomAbort(http.StatusUnauthorized, fmt.Sprintf("UploadImages image push error: authentication required"))
+		return dao.UpdateJobStatusById(jobId, fmt.Sprintf("UploadImages image push error: authentication required"))
 	}
 
-	r.CustomAbort(http.StatusCreated, "")
+	return dao.UpdateJobStatusById(jobId, "done")
 }
 
 // Get handles GET /api/v1/repos/:rid

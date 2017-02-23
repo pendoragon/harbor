@@ -51,6 +51,11 @@ func (b *BaseAPI) RenderError(code int, text string) {
 	http.Error(b.Ctx.ResponseWriter, text, code)
 }
 
+// RenderNoContent provides shortcut to render http 204 NoContent
+func (b *BaseAPI) RenderNoContent() {
+	b.Ctx.ResponseWriter.WriteHeader(http.StatusNoContent)
+}
+
 // DecodeJSONReq decodes a json request
 func (b *BaseAPI) DecodeJSONReq(v interface{}) {
 	err := json.Unmarshal(b.Ctx.Input.CopyBody(1<<32), v)

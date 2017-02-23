@@ -42,6 +42,28 @@ type RepoRecord struct {
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }
 
+// RepoRecordV1 holds the record of an repository in DB, all the infors are from the registry notification event.
+type RepoRecordV1 struct {
+	RepositoryID string    `orm:"column(repository_id);pk" json:"id"`
+	Name         string    `orm:"column(name)" json:"name"`
+	ProjectName  string    `orm:"-" json:"projectName"`
+	ProjectID    int64     `orm:"column(project_id)"  json:"projectId"`
+	Manager      string    `orm:"column(manager)" json:"manager"`
+	Description  string    `orm:"column(description)" json:"description"`
+	PullCount    int64     `orm:"column(pull_count)" json:"pullCount"`
+	StarCount    int64     `orm:"column(star_count)" json:"starCount"`
+	TagCount     int64     `orm:"column(tag_count)" json:"tagCount"`
+	LatestTag    string    `orm:"column(latest_tag)" json:"latestTag"`
+	LTagCTime    string    `orm:"column(ltag_ctime)" json:"latestTagCreationTime"`
+	Author       string    `orm:"column(author)" json:"author"`
+	LabelNames   string    `orm:"column(label_names)" json:"labels"`
+	VStatus      int       `orm:"-" json:"vStatus"` // vulnerabilities analysis status
+	VCount       int       `orm:"-" json:"vCount"`  // vulnerabilities count
+	Vs           string    `orm:"-" json:"vs"`      // vulnerabilities string
+	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creationTime"`
+	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"updateTime"`
+}
+
 //TableName is required by by beego orm to map RepoRecord to table repository
 func (rp *RepoRecord) TableName() string {
 	return "repository"

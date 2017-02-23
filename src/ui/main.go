@@ -84,6 +84,7 @@ func main() {
 		log.Error(err)
 	}
 	initRouters()
+	initV1Routers()
 	if err := api.SyncRegistry(); err != nil {
 		log.Error(err)
 	}

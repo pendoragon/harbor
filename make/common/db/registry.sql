@@ -126,6 +126,7 @@ create table label (
  project_id int NOT NULL,
  name varchar (255) NOT NULL,
  remark varchar (512) NOT NULL,
+ repos_str longtext,
  creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
  update_time timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  deleted tinyint (1) DEFAULT 0 NOT NULL,

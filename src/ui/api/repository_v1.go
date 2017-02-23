@@ -32,6 +32,9 @@ import (
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
+	"github.com/docker/distribution/manifest/schema1"
+	"github.com/docker/distribution/manifest/schema2"
+
 	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
@@ -41,6 +44,7 @@ import (
 	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
 	"github.com/vmware/harbor/src/ui/service/cache"
 )
+
 
 const defaultPageIndex int64 = 1
 const defaultPageSize int64 = 20
@@ -94,6 +98,7 @@ func (r *RepositoryAPIV1) List() {
 	log.Debugf("List repos, labels: %v", labels)
 
 	// default value
+
 	page := defaultPageIndex
 	pageSize := defaultPageSize
 

@@ -103,5 +103,17 @@ func initRouters() {
 }
 
 func initV1Routers() {
+	// projects
+	beego.Router("/api/v1/projects", &api.ProjectAPI{}, "get:ListV1;post:Post")
+	beego.Router("/api/v1/projects/:id", &api.ProjectAPI{}, "get:GetV1;put:Put;delete:Delete")
+
+	// labels
+	beego.Router("/api/v1/projects/:pid/labels", &api.LabelAPIV1{}, "get:List;post:Post")
+	beego.Router("/api/v1/projects/:pid/labels/:lid", &api.LabelAPIV1{})
+
+	// repos
 	beego.Router("/api/v1/repos", &api.RepositoryAPIV1{}, "get:List;post:UploadImages")
+	beego.Router("/api/v1/repos/:rid", &api.RepositoryAPIV1{}, "get:Get;delete:Delete")
+	beego.Router("/api/v1/repos/:rid/tags", &api.RepositoryAPIV1{}, "get:GetTags")
+	beego.Router("/api/v1/repos/:rid/tags/:tag", &api.RepositoryAPIV1{}, "get:GetManifests;delete:Delete")
 }

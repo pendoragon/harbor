@@ -116,4 +116,8 @@ func initV1Routers() {
 	beego.Router("/api/v1/repos/:rid", &api.RepositoryAPIV1{}, "get:Get;delete:Delete")
 	beego.Router("/api/v1/repos/:rid/tags", &api.RepositoryAPIV1{}, "get:GetTags")
 	beego.Router("/api/v1/repos/:rid/tags/:tag", &api.RepositoryAPIV1{}, "get:GetManifests;delete:Delete")
+
+	// jobs
+	beego.Router("/api/v1/jobs", &api.JobAPIV1{}, "post:Post")
+	beego.Router("/api/v1/jobs/:jid", &api.JobAPIV1{}, "get:GetJob")
 }

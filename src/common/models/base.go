@@ -26,6 +26,7 @@ func init() {
 		new(User),
 		new(Project),
 		new(Label),
+		new(Job),
 		new(Role),
 		new(AccessLog),
 		new(RepoRecord))

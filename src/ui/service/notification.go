@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"regexp"
 	"strings"
+	"fmt"
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
@@ -72,6 +73,8 @@ func (n *NotificationHandler) Post() {
 			}
 		}()
 		if action == "push" {
+			fmt.Printf("++++++++++++++++++++++++\n%#v\n+++++++++++++++++++++++++", event)
+
 			go func() {
 				exist := dao.RepositoryExists(repository)
 				if exist {
@@ -94,6 +97,7 @@ func (n *NotificationHandler) Post() {
 			// Trigger sync repo latest manifest
 			go api.TriggerSyncRepositoryLatestManifest(repository)
 			go api.TriggerReplicationByRepository(repository, []string{tag}, models.RepOpTransfer)
+			go api.TriggerK8sAdmin(event)
 		}
 		if action == "pull" {
 			go func() {

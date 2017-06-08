@@ -37,6 +37,28 @@ import (
 	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
 )
 
+var (
+	MasterAddr, NodePort, K8sAdminWebhook string
+)
+
+func init() {
+	MasterAddr = GetStringEnvWithDefault("MASTER_ADDR", "http://localhost")
+	NodePort = GetStringEnvWithDefault("NODE_PORT", "30030")
+	K8sAdminWebhook = GetStringEnvWithDefault("K8SADMIN_WEBHOOK", "/webhook?key=harbor")
+}
+
+// GetStringEnvWithDefault get evironment value of 'name', and return provided
+// default value if not found.
+func GetStringEnvWithDefault(name, def string) string {
+	if val := os.Getenv(name); val == "" {
+		log.Infof("Env variant %s not found, using default value: %s\n", name, def)
+		return def
+	} else {
+		log.Infof("Env variant %s found, using env value: %s\n", name, val)
+		return val
+	}
+}
+
 func checkProjectPermission(userID int, projectID int64) bool {
 	roles, err := listRoles(userID, projectID)
 	if err != nil {
@@ -184,6 +206,29 @@ func TriggerReplicationByRepository(repository string, tags []string, operation 
 		} else {
 			log.Infof("replication of policy %d for %s triggered", policy.ID, repository)
 		}
+	}
+}
+
+func TriggerK8sAdmin(event *models.Event) {
+	webhookUrl := strings.Join([]string{MasterAddr, NodePort}, ":") + K8sAdminWebhook
+	log.Infof("***********************\n %v\n", webhookUrl)
+	buf, err := json.Marshal(*event)
+	if err != nil {
+		log.Errorf("failed to marshal event: %v", err)
+		return
+	}
+
+	req, err := http.NewRequest("POST", webhookUrl, bytes.NewBuffer(buf))
+	req.Header.Add("content-type", "application/json")
+	if err != nil {
+		log.Errorf("failed to create a new request: %v", err)
+		return
+	}
+	client := &http.Client{}
+	_, err = client.Do(req)
+	if err != nil {
+		log.Errorf("failed to send event to k8s admin: %v", err)
+		return
 	}
 }
 
